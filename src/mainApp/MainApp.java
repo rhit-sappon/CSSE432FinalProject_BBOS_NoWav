@@ -36,7 +36,7 @@ public class MainApp {
 	}
 	private void setUpViewer() {
 		this.frame = new JFrame("JackBomb Level 1");
-		this.frame.setSize(616,939);
+		this.frame.setSize(600,930);
 		this.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.frame.setVisible(true);
 		this.component = new MainComponent(scanforLevel("levelGen.csv"));

@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.Random;
+import java.awt.Toolkit;
 
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
@@ -28,6 +29,8 @@ public class MainComponent extends JComponent {
 	ArrayList<Rectangle2D.Double> levelBombs;
 	ArrayList<Creature> objects = new ArrayList<>();
 	ArrayList<Creature> toDie = new ArrayList<>();
+
+	private boolean isUnix = System.getProperty("os.name").startsWith("Linux");
 	
 	private long level = 0;
 	private int bombs = 0;
@@ -117,9 +120,16 @@ public class MainComponent extends JComponent {
 		}
 		
 	}
+
+	protected void unixSync() {
+		if (this.isUnix) {
+			Toolkit.getDefaultToolkit().sync();
+		}
+	}
 	
 	@Override
 	protected void paintComponent(Graphics g) {
+		unixSync();
 		Graphics2D g2d = (Graphics2D) g;
 		this.levelLock.readLock().lock();
 		drawLevel(g2d);
