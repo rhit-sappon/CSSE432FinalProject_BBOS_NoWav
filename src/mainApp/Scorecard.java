@@ -17,12 +17,14 @@ public class Scorecard {
 	private int finalscore;
 	private int lives;
 	private boolean gameover = false;
+	private float fps;
 	BufferedImage image;
 	
 	public Scorecard() {
 		this.currentScore = 0;
 		this.lives = 3;
 		this.finalscore = 0;
+		this.fps = 0;
 		this.gameover = false;
 		try {
 			this.image = ImageIO.read(new File("gameoverlol.png"));
@@ -67,6 +69,11 @@ public class Scorecard {
 		if(gameover == false)
 			this.finalscore += score;
 	}
+
+	public void framerate(float timestep) {
+		this.fps = 100/timestep;
+	}
+
 	public int getScore() {
 		return this.currentScore;
 	}
@@ -78,6 +85,7 @@ public class Scorecard {
 			g2d.setFont(new Font("Comic Sans MS", Font.PLAIN, 25)); 
 			g2d.drawString("Score: " + this.currentScore, 0, 25);
 			g2d.drawString("Lives: " + this.lives, 0, 45);
+			g2d.drawString("Framerate: " + this.fps, 0, 65);
 			
 		}
 		else {

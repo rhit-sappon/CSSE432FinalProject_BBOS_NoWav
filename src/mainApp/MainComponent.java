@@ -31,12 +31,13 @@ public class MainComponent extends JComponent {
 	ArrayList<Creature> toDie = new ArrayList<>();
 
 	private boolean isUnix = System.getProperty("os.name").startsWith("Linux");
-	
+	private float fpsTimer = 100;
 	private long level = 0;
 	private int bombs = 0;
 	protected static final float GRAVITY = (float) 1.0;
 	private Scorecard scorecard;
 	private float step = 1;
+	private float avgstep = 10;
 	private int jumptime = 0;
 	private ReadWriteLock lock = new ReentrantReadWriteLock();
 	private ReadWriteLock levelLock = new ReentrantReadWriteLock();
@@ -52,6 +53,12 @@ public class MainComponent extends JComponent {
 	
 	protected void physics(float step) {
 		lock.readLock().lock();
+		this.fpsTimer += step;
+		this.avgstep = (avgstep + step)/2;
+		if(fpsTimer >= 100) {
+			fpsTimer -= 100;
+			scorecard.framerate(avgstep);
+		}
 		if(this.jumptime > 0) {
 			this.updateHeroYVel(-20);
 			this.hero.setOnGround(false);

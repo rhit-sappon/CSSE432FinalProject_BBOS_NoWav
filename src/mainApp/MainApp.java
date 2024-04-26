@@ -9,6 +9,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.JFrame;
 import javax.swing.Timer;
@@ -24,6 +25,7 @@ public class MainApp {
 	public int levelshift = 0;
 	private MainComponent component;
 	private JFrame frame;
+	private long limit = 16666666;
 	private void setFrameTitle(String title) {
 		this.frame.setTitle(title);
 	}
@@ -125,6 +127,12 @@ public class MainApp {
 			mainApp.levelSelect();
 			if(mainApp.component.nextLevel())
 				mainApp.setFrameTitle("Level " + mainApp.component.getLevel());
+			// try{
+			// 	TimeUnit.NANOSECONDS.sleep(mainApp.limit - deltaT);
+			// } catch (Exception e) {
+			// 	// TODO Auto-generated catch block
+			// 	e.printStackTrace();
+			// }
 		}
 	} // main
 	
