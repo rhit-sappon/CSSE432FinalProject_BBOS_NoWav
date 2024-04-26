@@ -1,0 +1,5 @@
+{
+    "java.eclipse.downloadSources": true,
+    "java.debug.settings.vmArgs": "-Xmx2G",
+    "java.jdt.ls.vmargs": ""
+}
