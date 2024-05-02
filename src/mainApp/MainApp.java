@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 import javax.swing.JFrame;
 import javax.swing.Timer;
 
+
 /**
  * Class: MainApp
  * @author Brendan Perez, Bryce Bejlovec, Owen Sapp
@@ -21,27 +22,27 @@ import javax.swing.Timer;
  * <br>Restrictions: None
  */
 public class MainApp {
+	private static final int XDIM = 30;
+	private static final int YDIM= 15;
+
+
 	private static final int DELAY = 10;
-	public int levelshift = 0;
 	private MainComponent component;
 	private JFrame frame;
 	private long limit = 16666666;
 	private void setFrameTitle(String title) {
 		this.frame.setTitle(title);
 	}
-	private void levelSelect() {
-		if(levelshift !=0) {
-			component.changeLevel(levelshift > 0);
-			setFrameTitle("Level " + component.getLevel());
-			levelshift = 0;
-		}
+	private void levelSelect(int levelshift) {
+		component.changeLevel(levelshift);
+		levelshift = 0;
 	}
 	private void setUpViewer() {
-		this.frame = new JFrame("JackBomb Level 1");
-		this.frame.setSize(600,930);
+		this.frame = new JFrame("JackBomb Level 0");
+		this.frame.setSize(XDIM*60,YDIM*60+30);
 		this.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.frame.setVisible(true);
-		this.component = new MainComponent(scanforLevel("levelGen.csv"));
+		this.component = new MainComponent(scanforLevel("levelGen.csv"), XDIM,YDIM);
 		this.frame.add(this.component);
 		this.component.interpolateLevel();
 		
@@ -62,11 +63,11 @@ public class MainApp {
 					component.jump(); //U Arrow
 				}
 				if(e.getKeyCode()==89) {
-					levelshift = -1;
+					levelSelect(-1);
 					//Y
 				}
 				if(e.getKeyCode()==85) {
-					levelshift = 1;
+					levelSelect(1);
 					//U
 				}
 			}
@@ -105,10 +106,11 @@ public class MainApp {
 	 * @param args unused
 	 */
 	public static void main(String[] args) {
+		LevelGenerator.generateLevel(0, false, XDIM, YDIM);
 		MainApp mainApp = new MainApp();
-		LevelGenerator.generateLevel(0, false);
 		mainApp.setUpViewer();
 		mainApp.runApp();
+		mainApp.setFrameTitle("Level " + mainApp.component.getLevel());
 //		Timer t = new Timer(DELAY, new ActionListener() {
 //			@Override
 //			public void actionPerformed(ActionEvent arg0) {
@@ -124,7 +126,7 @@ public class MainApp {
 			mainApp.component.physics((float) (((float)deltaT)/10000000.00));
 			mainApp.repaint();
 			deltaT = 1*System.nanoTime() - time;
-			mainApp.levelSelect();
+			// mainApp.levelSelect();
 			if(mainApp.component.nextLevel())
 				mainApp.setFrameTitle("Level " + mainApp.component.getLevel());
 			// try{
@@ -150,7 +152,7 @@ public class MainApp {
 		Scanner scanner = new Scanner(file);
 		while(scanner.hasNext()) {
 			String[] sLevelData = scanner.next().split(",");
-			Integer[] rowNum = new Integer[10];
+			Integer[] rowNum = new Integer[XDIM];
 			for(int i = 0; i < sLevelData.length; i++) {
 				rowNum[i] = Integer.parseInt(sLevelData[i]);
 			}

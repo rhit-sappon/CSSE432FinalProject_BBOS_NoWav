@@ -8,9 +8,13 @@ import java.util.Random;
 public class Enemy2 extends Creature{
 	private boolean near = false;
 	private boolean fear;
-	public Enemy2(int posx, int posy) {
+	private int xdim;
+	private int ydim;
+	public Enemy2(int posx, int posy, int XDIM, int YDIM) {
 		super(posx, posy);
 		this.color = Color.RED;
+		this.xdim = XDIM;
+		this.ydim = YDIM;
 		Random rand = new Random();
 		fear = rand.nextBoolean();
 		if(fear == false) {
@@ -49,7 +53,7 @@ public class Enemy2 extends Creature{
 		else if(fear == false) {
 			if(this.xPosition <= 60)
 				this.setXVelocity(5);
-			if(this.xPosition >= 480)
+			if(this.xPosition >= 60*(this.xdim-2))
 				this.setXVelocity(-5);
 			
 		}

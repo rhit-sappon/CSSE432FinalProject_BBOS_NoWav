@@ -24,7 +24,7 @@ public class MainComponent extends JComponent {
 	private Hero hero;
 	ArrayList<Integer[]> levelData = new ArrayList<>();
 	ArrayList<Rectangle2D.Double> levelWalls;
-	Rectangle2D.Double levelBackdrop = new Rectangle2D.Double(0,0,600,900);
+	Rectangle2D.Double levelBackdrop;
 	ArrayList<Rectangle2D.Double> levelPlatforms;
 	ArrayList<Rectangle2D.Double> levelBombs;
 	ArrayList<Creature> objects = new ArrayList<>();
@@ -42,12 +42,21 @@ public class MainComponent extends JComponent {
 	private ReadWriteLock lock = new ReentrantReadWriteLock();
 	private ReadWriteLock levelLock = new ReentrantReadWriteLock();
 	private boolean nextlevel = false;
+	private int xdim;
+	private int ydim;
+	private int xpix;
+	private int ypix;
 	
-	public MainComponent(ArrayList<Integer[]> levelData) {
+	public MainComponent(ArrayList<Integer[]> levelData, int XDIM, int YDIM) {
 		super();
 		this.hero = new Hero(10, 10);
-		this.scorecard = new Scorecard();
+		this.scorecard = new Scorecard(XDIM,YDIM);
 		this.levelData=levelData;
+		this.xdim = XDIM;
+		this.ydim = YDIM;
+		this.xpix = XDIM*60;
+		this.ypix = YDIM*60;
+		this.levelBackdrop = new Rectangle2D.Double(0,0,this.xpix,this.ypix);
 		makeMumsic();
 	} 
 	
@@ -123,7 +132,7 @@ public class MainComponent extends JComponent {
 		if(this.bombs == 0) {
 			SoundiBoi.stopTrack();
 			makeMumsic();
-			changeLevel(true);
+			changeLevel(1);
 		}
 		
 	}
@@ -163,17 +172,13 @@ public class MainComponent extends JComponent {
 		return false;
 	}
 
-	public void changeLevel(boolean dir) {
+	public void changeLevel(int dir) {
 		this.levelLock.writeLock().lock();
 		this.scorecard.addScore(100);
 		this.scorecard.setLife(3);
-		if(dir) {
-			this.level += 1;
-		}else {
-			this.level -= 1;
-		}
-		updateLevelData(scanforLevel("levelGen.csv"));
-		LevelGenerator.generateLevel(this.level, false);
+		this.level = this.level + dir;
+		LevelGenerator.generateLevel(this.level, false,this.xdim,this.ydim);
+		scanforLevel("levelGen.csv");
 		interpolateLevel();
 		this.levelLock.writeLock().unlock();
 		this.nextlevel = true;
@@ -259,13 +264,13 @@ public class MainComponent extends JComponent {
 //	Rectangle2D.Double creatureCollide = new Rectangle2D.Double(XPos, YPos, XDim, YDim);
 	public void loop(Creature creature) {
 		if(creature.getXPos() < -58) {
-			creature.setPosition(598, creature.getYPos());
-		} else if(creature.getXPos() > 598) {
+			creature.setPosition(this.xpix - 2, creature.getYPos());
+		} else if(creature.getXPos() > this.xpix - 2) {
 			creature.setPosition(-58, creature.getYPos());
 		}if(creature.getYPos() < -58) {
-			creature.setPosition(creature.getXPos(),898);
+			creature.setPosition(creature.getXPos(), this.ypix - 2);
 			creature.setYVelocity(-20);
-		} else if(creature.getYPos() > 898) {
+		} else if(creature.getYPos() > this.ypix-2) {
 			creature.setPosition(creature.getXPos(),-58);
 		}
 	}
@@ -338,7 +343,7 @@ public class MainComponent extends JComponent {
 					Enemy1 enemy = new Enemy1(spacingx,spacingy);
 					objects.add(enemy);
 				}else if(row[c]==6) {
-					Enemy2 enemy = new Enemy2(spacingx,spacingy);
+					Enemy2 enemy = new Enemy2(spacingx,spacingy, this.xdim, this.ydim);
 					objects.add(enemy);
 				}
 				spacingx+=60;
@@ -404,9 +409,8 @@ public class MainComponent extends JComponent {
 		SoundiBoi.playTrack();
 	}
 	
-	public ArrayList<Integer[]> scanforLevel(String filename) {
+	public void scanforLevel(String filename) {
 		FileReader file = null;
-		ArrayList<Integer[]> levelData = new ArrayList<Integer[]>();
 		try {
 			file = new FileReader(filename);
 		} catch (FileNotFoundException e) {
@@ -414,16 +418,16 @@ public class MainComponent extends JComponent {
 			//e.printStackTrace();
 			System.out.println("bruh");
 		}
+		levelData.clear();
 		Scanner scanner = new Scanner(file);
 		while(scanner.hasNext()) {
 			String[] sLevelData = scanner.next().split(",");
-			Integer[] rowNum = new Integer[10];
+			Integer[] rowNum = new Integer[this.xdim];
 			for(int i = 0; i < sLevelData.length; i++) {
 				rowNum[i] = Integer.parseInt(sLevelData[i]);
 			}
-			levelData.add(rowNum);
+			this.levelData.add(rowNum);
 		}
 		scanner.close();
-		return levelData;
 	}
 }

@@ -18,14 +18,18 @@ public class Scorecard {
 	private int lives;
 	private boolean gameover = false;
 	private float fps;
+	private int xdim;
+	private int ydim;
 	BufferedImage image;
 	
-	public Scorecard() {
+	public Scorecard(int XDIM, int YDIM) {
 		this.currentScore = 0;
 		this.lives = 3;
 		this.finalscore = 0;
 		this.fps = 0;
 		this.gameover = false;
+		this.xdim = XDIM;
+		this.ydim = YDIM;
 		try {
 			this.image = ImageIO.read(new File("gameoverlol.png"));
 		} catch (IOException e) {
@@ -91,13 +95,13 @@ public class Scorecard {
 		else {
 
 		g2d.setColor(Color.white);
-		g2d.fillRect(0, 0, 619, 939);
+		g2d.fillRect(0, 0, this.xdim * 60, this.ydim*60);
 		g2d.setColor(Color.black);
 		g2d.setFont(new Font("Comic Sans MS", Font.PLAIN, 25)); 
-		g2d.drawString("GAME OVER!", 250, 200);
-		g2d.drawString("Score: " + finalscore, 250, 240);
+		g2d.drawString("GAME OVER!", this.xdim*30-60, this.ydim * 15);
+		g2d.drawString("Score: " + finalscore, this.xdim*30-50, this.ydim*40);
 		BufferedImage imageToDraw = this.image;
-		g2d.drawImage(imageToDraw, 175, 400, 200, 200, null);
+		g2d.drawImage(imageToDraw, this.xdim*30 - 100, this.ydim*20, 200, 200, null);
 		}
 	}
 	
