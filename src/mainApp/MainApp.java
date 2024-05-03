@@ -1,20 +1,24 @@
 package mainApp;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 import java.lang.Thread;
+import java.net.Socket;
 
 import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
-
 
 /**
  * Class: MainApp
@@ -25,7 +29,6 @@ import javax.swing.Timer;
 public class MainApp {
 	private static final int XDIM = 20;
 	private static final int YDIM= 15;
-
 
 	private static final int DELAY = 10;
 	private MainComponent component;
@@ -41,17 +44,86 @@ public class MainApp {
 	private void setUpViewer() {
 		this.frame = new JFrame("Level 0");
 		this.frame.setSize(XDIM*60,YDIM*60+30);
+		this.frame.setLayout(new BorderLayout());
 		this.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.frame.setVisible(true);
 		this.component = new MainComponent(scanforLevel("levelGen.csv"), XDIM,YDIM);
-		this.frame.add(this.component);
+		this.frame.add(this.component,BorderLayout.CENTER);
 		this.component.interpolateLevel();
+		this.component.addMouseListener((MouseListener) new MouseListener() {
+
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				// TODO Auto-generated method stub
+				System.out.println(e.getPoint());
+				// int xmidclick = e.getX() - component.getXMid();
+				// int ymidclick = -45 + e.getY() - component.getYMid();
+				// System.out.println(xmidclick);
+				// System.out.println(ymidclick);
+				// if( -150 < xmidclick && xmidclick < 150) {
+				// 	if( -150 < ymidclick && ymidclick < -50) {
+				// 		component.startGame();
+				// 	}
+				// }
+				if (component.isSettings()){
+					if (component.hitLeaveSettings(e.getX(), e.getY())) {
+						component.toggleSettings();
+					}
+				} else if (component.isInMenu()) {
+					if (component.hitStartButton(e.getX(),e.getY())){
+						component.startGame();
+					} else if(component.hitConnectButton(e.getX(),e.getY())){
+						component.startGame();
+					} else if(component.hitHostButton(e.getX(),e.getY())){
+						component.startGame();
+					} else if(component.hitSettingsButton(e.getX(),e.getY())){
+						component.toggleSettings();
+					}
+				} else if (component.isPaused()) {
+					if (component.hitToMenu(e.getX(),e.getY())){
+						component.startGame();
+					} else if(component.hitSettingsButton(e.getX(),e.getY())){
+						component.toggleSettings();
+					}
+				}
+				// throw new UnsupportedOperationException("Unimplemented method 'mouseClicked'");
+			}
+
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				// TODO Auto-generated method stub
+				// throw new UnsupportedOperationException("Unimplemented method 'mouseEntered'");
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+				// TODO Auto-generated method stub
+				// throw new UnsupportedOperationException("Unimplemented method 'mouseExited'");
+			}
+
+			@Override
+			public void mousePressed(MouseEvent e) {
+				// TODO Auto-generated method stub
+				// throw new UnsupportedOperationException("Unimplemented method 'mousePressed'");
+			}
+
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				// TODO Auto-generated method stub
+				// throw new UnsupportedOperationException("Unimplemented method 'mouseReleased'");
+			}
+			
+		});
 		
 		this.frame.addKeyListener((KeyListener) new KeyListener() {
 			@Override
-			public void keyPressed(KeyEvent e) {
-
+			public void keyPressed(KeyEvent e) {;
 				if(e.getKeyCode()==27) {
+					if (component.isPaused()) {
+						if(component.isSettings()) {
+							component.toggleSettings();
+						}
+					}
 					component.togglePause();
 				}
 				if(e.getKeyCode()==39) {

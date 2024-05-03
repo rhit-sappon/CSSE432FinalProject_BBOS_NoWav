@@ -1,6 +1,7 @@
 package mainApp;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.util.concurrent.locks.*;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -11,6 +12,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Scanner;
 import java.util.Random;
 import java.awt.Toolkit;
@@ -30,9 +32,17 @@ public class MainComponent extends JComponent {
 	ArrayList<Rectangle2D.Double> levelBombs;
 	ArrayList<Creature> objects = new ArrayList<>();
 	ArrayList<Creature> toDie = new ArrayList<>();
-	ArrayList<Rectangle2D.Double> mainMenu;
-	ArrayList<Rectangle2D.Double> pause;
-	ArrayList<Rectangle2D.Double> settings;
+	
+	ArrayList<Rectangle2D.Double> mainMenu = new ArrayList<>();
+	ArrayList<Rectangle2D.Double> pause =  new ArrayList<>();
+	ArrayList<Rectangle2D.Double> settings = new ArrayList<>();
+
+	// ArrayList<HashMap<String,Rectangle2D.Double>> buttons = new ArrayList<>();
+
+	// HashMap<String,Rectangle2D.Double> mainMenu = new HashMap<>();
+	// HashMap<String,Rectangle2D.Double> pause = new HashMap<>();
+	// HashMap<String,Rectangle2D.Double> settings = new HashMap<>();
+	
 
 	private boolean isUnix = System.getProperty("os.name").startsWith("Linux");
 	private float fpsTimer = 100;
@@ -50,7 +60,11 @@ public class MainComponent extends JComponent {
 	private int ydim;
 	private int xpix;
 	private int ypix;
+	private int xmid;
+	private int ymid;
 	private boolean pausecontrol = false;
+	private boolean inmenu = true;
+	private boolean showSettings = false;
 	private Color pauseColor = new Color(0.1f,0.1f,0.1f,0.5f);
 	
 	public MainComponent(ArrayList<Integer[]> levelData, int XDIM, int YDIM) {
@@ -62,8 +76,26 @@ public class MainComponent extends JComponent {
 		this.ydim = YDIM;
 		this.xpix = XDIM*60;
 		this.ypix = YDIM*60;
+		this.xmid = this.xpix/2;
+		this.ymid = this.ypix/2;
+
 		this.levelBackdrop = new Rectangle2D.Double(0,0,this.xpix,this.ypix);
 		this.gamePause = new Rectangle2D.Double(0,0,this.xpix,this.ypix);
+
+		// this.buttons.add(new HashMap<String,Rectangle2D.Double>());
+		// this.buttons.add(new HashMap<String,Rectangle2D.Double>());
+		// this.buttons.add(new HashMap<String,Rectangle2D.Double>());
+
+		this.mainMenu.add(new Rectangle2D.Double(this.xmid - 150 ,this.ymid - 150,300,100)); //Singleplayer
+		this.mainMenu.add(new Rectangle2D.Double(this.xmid - 150 ,this.ymid,300,100)); //Join server
+		this.mainMenu.add(new Rectangle2D.Double(this.xmid - 150 ,this.ymid + 150,300,100)); //Host Server
+		this.mainMenu.add(new Rectangle2D.Double(this.xmid - 150 ,this.ymid + 300,300,100)); //Settings
+
+		this.pause.add(new Rectangle2D.Double(this.xmid - 150 ,this.ymid - 150,300,100)); //back to menu
+		this.pause.add(new Rectangle2D.Double(this.xmid - 150 ,this.ymid,300,100)); //Settings
+
+		this.settings.add(new Rectangle2D.Double(this.xmid - 150 ,this.ymid - 150,300,100));//Back to previous screen
+
 		makeMumsic();
 	} 
 	
@@ -74,7 +106,7 @@ public class MainComponent extends JComponent {
 			fpsTimer -= 100;
 			scorecard.framerate(avgstep);
 		}
-		if (this.pausecontrol) {
+		if (this.pausecontrol || this.inmenu) {
 			return;
 		}
 		lock.readLock().lock();
@@ -157,6 +189,11 @@ public class MainComponent extends JComponent {
 	protected void paintComponent(Graphics g) {
 		unixSync();
 		Graphics2D g2d = (Graphics2D) g;
+
+		if(this.inmenu){
+			drawMenu(g2d);
+			return;
+		}
 		
 		this.levelLock.readLock().lock();
 		if (this.hero.isAlive) {
@@ -325,7 +362,36 @@ public class MainComponent extends JComponent {
 		}
 		return false;
 	}
+
+	public boolean hitStartButton(int x, int y){
+		return this.mainMenu.get(0).contains(x,y);
+	}
+	public boolean hitConnectButton(int x, int y){
+		return this.mainMenu.get(1).contains(x,y);
+	}
 	
+	public boolean hitHostButton(int x, int y){
+		return this.mainMenu.get(2).contains(x,y);
+	}
+
+	public boolean hitSettingsButton(int x, int y){
+		if (this.inmenu) {
+			return this.mainMenu.get(3).contains(x,y);
+		} else if (this.pausecontrol) {
+			return this.pause.get(1).contains(x,y);
+		}
+
+		return false;
+	}
+
+	public boolean hitLeaveSettings(int x, int y){
+		return this.settings.get(0).contains(x,y);
+	}
+
+	public boolean hitToMenu(int x, int y){
+		return this.pause.get(0).contains(x, y);
+	}
+
 	public void phaseToggle(boolean toggle) {
 		this.hero.setPhase(toggle);
 	}
@@ -399,12 +465,73 @@ public class MainComponent extends JComponent {
 	}
 
 	public void togglePause(){
-		this.pausecontrol = !this.pausecontrol;
+		if(!this.inmenu)
+			this.pausecontrol = !this.pausecontrol;
 	}
 	
+	public void startGame(){
+		this.inmenu = !this.inmenu;
+	}
+
+	public void toggleSettings(){
+		this.showSettings = !this.showSettings;
+	}
+
+	public boolean isInMenu(){
+		return this.inmenu;
+	}
+
+	public boolean isPaused(){
+		return this.pausecontrol;
+	}
+
+	public boolean isSettings(){
+		return this.showSettings;
+	}
+
 	private void drawPause(Graphics2D g2d){
 		g2d.setColor(this.pauseColor);
 		g2d.fill(this.gamePause);
+		if (this.showSettings) {
+			for(Rectangle2D.Double button : this.settings){
+				g2d.setColor(this.pauseColor);
+				g2d.fill(button);
+				g2d.setColor(Color.WHITE);
+				g2d.setFont(new Font("Comic Sans MS", Font.PLAIN, 25)); 
+				g2d.drawString("Placeholder", (int)(button.x+button.width/2 - 70) , (int)(button.y + button.height/2));
+			}
+			
+		} else {
+			for(Rectangle2D.Double button : this.pause){
+				g2d.setColor(this.pauseColor);
+				g2d.fill(button);
+				g2d.setColor(Color.WHITE);
+				g2d.setFont(new Font("Comic Sans MS", Font.PLAIN, 25)); 
+				g2d.drawString("Placeholder", (int)(button.x+button.width/2 - 70) , (int)(button.y + button.height/2));
+			}
+		}
+	}
+
+	private void drawMenu(Graphics2D g2d){
+		drawLevelBackdrop(g2d);
+		g2d.setColor(this.pauseColor);
+		if (this.showSettings) {
+			for(Rectangle2D.Double button : this.settings){
+				g2d.setColor(this.pauseColor);
+				g2d.fill(button);
+				g2d.setColor(Color.WHITE);
+				g2d.setFont(new Font("Comic Sans MS", Font.PLAIN, 25)); 
+				g2d.drawString("Placeholder", (int)(button.x+button.width/2 - 70) , (int)(button.y + button.height/2));
+			}
+		} else {
+			for(Rectangle2D.Double button : this.mainMenu){
+				g2d.setColor(this.pauseColor);
+				g2d.fill(button);
+				g2d.setColor(Color.WHITE);
+				g2d.setFont(new Font("Comic Sans MS", Font.PLAIN, 25)); 
+				g2d.drawString("Placeholder", (int)(button.x+button.width/2 - 70) , (int)(button.y + button.height/2));
+			}
+		}
 	}
 	
 	private void drawLevel(Graphics2D g2d) {
@@ -455,5 +582,25 @@ public class MainComponent extends JComponent {
 			this.levelData.add(rowNum);
 		}
 		scanner.close();
+	}
+
+	public int getXMid(){
+		return this.xmid;
+	}
+
+	public int getYMid(){
+		return this.ymid;
+	}
+
+	public ArrayList<byte[]> retrieveEntityPacket(){
+		return new ArrayList<byte[]>();
+	}
+
+	private ArrayList<byte[]> serverEntityPacketHelper(){
+		return new ArrayList<byte[]>();
+	}
+
+	private ArrayList<byte[]> clientEntityPacketHelper(){
+		return new ArrayList<byte[]>();
 	}
 }
