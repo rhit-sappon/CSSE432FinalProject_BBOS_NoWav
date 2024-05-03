@@ -10,6 +10,7 @@ import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
+import java.lang.Thread;
 
 import javax.swing.JFrame;
 import javax.swing.Timer;
@@ -22,7 +23,7 @@ import javax.swing.Timer;
  * <br>Restrictions: None
  */
 public class MainApp {
-	private static final int XDIM = 30;
+	private static final int XDIM = 20;
 	private static final int YDIM= 15;
 
 
@@ -38,7 +39,7 @@ public class MainApp {
 		levelshift = 0;
 	}
 	private void setUpViewer() {
-		this.frame = new JFrame("JackBomb Level 0");
+		this.frame = new JFrame("Level 0");
 		this.frame.setSize(XDIM*60,YDIM*60+30);
 		this.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.frame.setVisible(true);
@@ -49,6 +50,10 @@ public class MainApp {
 		this.frame.addKeyListener((KeyListener) new KeyListener() {
 			@Override
 			public void keyPressed(KeyEvent e) {
+
+				if(e.getKeyCode()==27) {
+					component.togglePause();
+				}
 				if(e.getKeyCode()==39) {
 					component.updateHeroXVel(10); //R Arrow
 				}else if(e.getKeyCode()==37) {

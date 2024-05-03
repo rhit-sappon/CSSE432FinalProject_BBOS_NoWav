@@ -223,8 +223,18 @@ public class LevelGenerator {
 				int middle = (xdim-2)/2;
 				if(foundPlat && !belowPlat) {
 					Integer[] nRow = level.get(i+ 3);
-					nRow[bombX] = PLAT;
-					nRow[bombX + 1] = PLAT;
+					int newPlats = 0;
+					for (int j = -1; j < 2; j++) {
+						if (nRow[bombX - j ] == WALL || nRow[bombX - j ] == BOMB) {
+							continue;
+						}
+						if (newPlats == 2){
+							break;
+						}
+						nRow[bombX - j] = PLAT;
+						newPlats++;
+					}
+					
 					level.set(i + 3, nRow);
 				}
 				lastPlat = true;

@@ -25,10 +25,14 @@ public class MainComponent extends JComponent {
 	ArrayList<Integer[]> levelData = new ArrayList<>();
 	ArrayList<Rectangle2D.Double> levelWalls;
 	Rectangle2D.Double levelBackdrop;
+	Rectangle2D.Double gamePause;
 	ArrayList<Rectangle2D.Double> levelPlatforms;
 	ArrayList<Rectangle2D.Double> levelBombs;
 	ArrayList<Creature> objects = new ArrayList<>();
 	ArrayList<Creature> toDie = new ArrayList<>();
+	ArrayList<Rectangle2D.Double> mainMenu;
+	ArrayList<Rectangle2D.Double> pause;
+	ArrayList<Rectangle2D.Double> settings;
 
 	private boolean isUnix = System.getProperty("os.name").startsWith("Linux");
 	private float fpsTimer = 100;
@@ -46,6 +50,8 @@ public class MainComponent extends JComponent {
 	private int ydim;
 	private int xpix;
 	private int ypix;
+	private boolean pausecontrol = false;
+	private Color pauseColor = new Color(0.1f,0.1f,0.1f,0.5f);
 	
 	public MainComponent(ArrayList<Integer[]> levelData, int XDIM, int YDIM) {
 		super();
@@ -57,17 +63,21 @@ public class MainComponent extends JComponent {
 		this.xpix = XDIM*60;
 		this.ypix = YDIM*60;
 		this.levelBackdrop = new Rectangle2D.Double(0,0,this.xpix,this.ypix);
+		this.gamePause = new Rectangle2D.Double(0,0,this.xpix,this.ypix);
 		makeMumsic();
 	} 
 	
 	protected void physics(float step) {
-		lock.readLock().lock();
 		this.fpsTimer += step;
 		this.avgstep = (avgstep + step)/2;
 		if(fpsTimer >= 100) {
 			fpsTimer -= 100;
 			scorecard.framerate(avgstep);
 		}
+		if (this.pausecontrol) {
+			return;
+		}
+		lock.readLock().lock();
 		if(this.jumptime > 0) {
 			this.updateHeroYVel(-20);
 			this.hero.setOnGround(false);
@@ -147,16 +157,23 @@ public class MainComponent extends JComponent {
 	protected void paintComponent(Graphics g) {
 		unixSync();
 		Graphics2D g2d = (Graphics2D) g;
-		this.levelLock.readLock().lock();
-		drawLevel(g2d);
 		
-		this.hero.drawOn(g2d);
-		if(objects.size() > 0)
-			for(Creature enemy : objects) {
-				enemy.drawOn(g2d);
-			}
+		this.levelLock.readLock().lock();
+		if (this.hero.isAlive) {
+			drawLevel(g2d);
+			
+			this.hero.drawOn(g2d);
+			if(objects.size() > 0)
+				for(Creature enemy : objects) {
+					enemy.drawOn(g2d);
+				}
+		}
 
 		this.scorecard.drawOn(g2d);
+
+		if (this.pausecontrol){
+			drawPause(g2d);
+		}
 		this.levelLock.readLock().unlock();
 	} // paintComponent
 	
@@ -380,7 +397,15 @@ public class MainComponent extends JComponent {
 			g2d.fill(rect);
 		}
 	}
+
+	public void togglePause(){
+		this.pausecontrol = !this.pausecontrol;
+	}
 	
+	private void drawPause(Graphics2D g2d){
+		g2d.setColor(this.pauseColor);
+		g2d.fill(this.gamePause);
+	}
 	
 	private void drawLevel(Graphics2D g2d) {
 		drawLevelBackdrop(g2d);
@@ -388,6 +413,7 @@ public class MainComponent extends JComponent {
 		drawLevelPlatforms(g2d);
 		drawLevelBombs(g2d);
 	}
+
 	public void makeMumsic() {
 		Random rand = new Random();
 		int n = rand.nextInt(11);

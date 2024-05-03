@@ -20,6 +20,7 @@ public class Scorecard {
 	private float fps;
 	private int xdim;
 	private int ydim;
+	private Color endColor = new Color(0.4f,0.4f,0.4f,0.5f);
 	BufferedImage image;
 	
 	public Scorecard(int XDIM, int YDIM) {
@@ -94,7 +95,7 @@ public class Scorecard {
 		}
 		else {
 
-		g2d.setColor(Color.white);
+		g2d.setColor(this.endColor);
 		g2d.fillRect(0, 0, this.xdim * 60, this.ydim*60);
 		g2d.setColor(Color.black);
 		g2d.setFont(new Font("Comic Sans MS", Font.PLAIN, 25)); 
