@@ -14,7 +14,6 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 
 public class Scorecard {
 	private int currentScore;
-	private int finalscore;
 	private int lives;
 	private boolean gameover = false;
 	private float fps;
@@ -26,7 +25,6 @@ public class Scorecard {
 	public Scorecard(int XDIM, int YDIM) {
 		this.currentScore = 0;
 		this.lives = 3;
-		this.finalscore = 0;
 		this.fps = 0;
 		this.gameover = false;
 		this.xdim = XDIM;
@@ -71,8 +69,6 @@ public class Scorecard {
 	}
 	public void addScore(int score) {
 		this.currentScore += score;
-		if(gameover == false)
-			this.finalscore += score;
 	}
 
 	public void framerate(float timestep) {
@@ -81,6 +77,12 @@ public class Scorecard {
 
 	public int getScore() {
 		return this.currentScore;
+	}
+
+	public void reset(){
+		this.currentScore = 0;
+		this.lives = 3;
+		this.gameover = false;
 	}
 	
 	public void drawOn(Graphics2D g) {
@@ -100,7 +102,7 @@ public class Scorecard {
 		g2d.setColor(Color.black);
 		g2d.setFont(new Font("Comic Sans MS", Font.PLAIN, 25)); 
 		g2d.drawString("GAME OVER!", this.xdim*30-60, this.ydim * 15);
-		g2d.drawString("Score: " + finalscore, this.xdim*30-50, this.ydim*40);
+		g2d.drawString("Score: " + this.currentScore, this.xdim*30-50, this.ydim*40);
 		BufferedImage imageToDraw = this.image;
 		g2d.drawImage(imageToDraw, this.xdim*30 - 100, this.ydim*20, 200, 200, null);
 		}

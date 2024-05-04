@@ -55,7 +55,6 @@ public class MainApp {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				// TODO Auto-generated method stub
-				System.out.println(e.getPoint());
 				// int xmidclick = e.getX() - component.getXMid();
 				// int ymidclick = -45 + e.getY() - component.getYMid();
 				// System.out.println(xmidclick);
@@ -66,23 +65,31 @@ public class MainApp {
 				// 	}
 				// }
 				if (component.isSettings()){
-					if (component.hitLeaveSettings(e.getX(), e.getY())) {
+					component.inputText(-1);
+					if (component.hitButton(2,"Go Back",e.getX(), e.getY())) {
 						component.toggleSettings();
+					} else if (component.hitButton(2,"Color",e.getX(), e.getY())) {
+						component.inputText(0);
+					} else if (component.hitButton(2,"Name",e.getX(), e.getY())) {
+						component.inputText(1);
+					} else if (component.hitButton(2,"Server IP",e.getX(), e.getY())) {
+						component.inputText(2);
 					}
 				} else if (component.isInMenu()) {
-					if (component.hitStartButton(e.getX(),e.getY())){
+					if (component.hitButton(0,"Play Singleplayer",e.getX(),e.getY())){
 						component.startGame();
-					} else if(component.hitConnectButton(e.getX(),e.getY())){
+					} else if(component.hitButton(0, "Connect to Server",e.getX(),e.getY())){
 						component.startGame();
-					} else if(component.hitHostButton(e.getX(),e.getY())){
+					} else if(component.hitButton(0, "Host a Server", e.getX(),e.getY())){
 						component.startGame();
-					} else if(component.hitSettingsButton(e.getX(),e.getY())){
+					} else if(component.hitButton(0,"Settings",e.getX(),e.getY())){
 						component.toggleSettings();
 					}
 				} else if (component.isPaused()) {
-					if (component.hitToMenu(e.getX(),e.getY())){
+					if (component.hitButton(1, "Return to Menu",e.getX(),e.getY())){
+						component.restart();
 						component.startGame();
-					} else if(component.hitSettingsButton(e.getX(),e.getY())){
+					} else if(component.hitButton(1,"Settings",e.getX(),e.getY())){
 						component.toggleSettings();
 					}
 				}
@@ -118,6 +125,12 @@ public class MainApp {
 		this.frame.addKeyListener((KeyListener) new KeyListener() {
 			@Override
 			public void keyPressed(KeyEvent e) {;
+				if(component.getInput() > -1){
+					if (e.getKeyCode() == 8) {
+						component.backspace();
+					}
+					return;
+				}
 				if(e.getKeyCode()==27) {
 					if (component.isPaused()) {
 						if(component.isSettings()) {
@@ -152,6 +165,11 @@ public class MainApp {
 			@Override
 			public void keyTyped(KeyEvent e) {
 				// TODO Auto-generated method stub
+				if(component.getInput() > -1){
+					if ((int)e.getKeyChar() == 8)
+						return;
+					component.readInput(e.getKeyChar());
+				}
 				
 			}
 

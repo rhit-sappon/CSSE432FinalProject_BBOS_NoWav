@@ -32,12 +32,12 @@ public class MainComponent extends JComponent {
 	ArrayList<Rectangle2D.Double> levelBombs;
 	ArrayList<Creature> objects = new ArrayList<>();
 	ArrayList<Creature> toDie = new ArrayList<>();
-	
-	ArrayList<Rectangle2D.Double> mainMenu = new ArrayList<>();
-	ArrayList<Rectangle2D.Double> pause =  new ArrayList<>();
-	ArrayList<Rectangle2D.Double> settings = new ArrayList<>();
 
-	// ArrayList<HashMap<String,Rectangle2D.Double>> buttons = new ArrayList<>();
+	// ArrayList<Rectangle2D.Double> mainMenu = new ArrayList<>();
+	// ArrayList<Rectangle2D.Double> pause =  new ArrayList<>();
+	// ArrayList<Rectangle2D.Double> settings = new ArrayList<>();
+
+	ArrayList<HashMap<String,Rectangle2D.Double>> buttons = new ArrayList<>();
 
 	// HashMap<String,Rectangle2D.Double> mainMenu = new HashMap<>();
 	// HashMap<String,Rectangle2D.Double> pause = new HashMap<>();
@@ -65,7 +65,10 @@ public class MainComponent extends JComponent {
 	private boolean pausecontrol = false;
 	private boolean inmenu = true;
 	private boolean showSettings = false;
+	private int inText = -1;
 	private Color pauseColor = new Color(0.1f,0.1f,0.1f,0.5f);
+	private ArrayList<StringBuffer> settingStrings = new ArrayList<>();
+	private HashMap<String,Integer> inTextToCode = new HashMap<String,Integer>();
 	
 	public MainComponent(ArrayList<Integer[]> levelData, int XDIM, int YDIM) {
 		super();
@@ -82,19 +85,32 @@ public class MainComponent extends JComponent {
 		this.levelBackdrop = new Rectangle2D.Double(0,0,this.xpix,this.ypix);
 		this.gamePause = new Rectangle2D.Double(0,0,this.xpix,this.ypix);
 
-		// this.buttons.add(new HashMap<String,Rectangle2D.Double>());
-		// this.buttons.add(new HashMap<String,Rectangle2D.Double>());
-		// this.buttons.add(new HashMap<String,Rectangle2D.Double>());
+		this.buttons.add(new HashMap<String,Rectangle2D.Double>());
+		this.buttons.add(new HashMap<String,Rectangle2D.Double>());
+		this.buttons.add(new HashMap<String,Rectangle2D.Double>());
 
-		this.mainMenu.add(new Rectangle2D.Double(this.xmid - 150 ,this.ymid - 150,300,100)); //Singleplayer
-		this.mainMenu.add(new Rectangle2D.Double(this.xmid - 150 ,this.ymid,300,100)); //Join server
-		this.mainMenu.add(new Rectangle2D.Double(this.xmid - 150 ,this.ymid + 150,300,100)); //Host Server
-		this.mainMenu.add(new Rectangle2D.Double(this.xmid - 150 ,this.ymid + 300,300,100)); //Settings
+		this.buttons.get(0).put("Play Singleplayer",new Rectangle2D.Double(this.xmid - 150 ,this.ymid - 150,300,100)); //Singleplayer
+		this.buttons.get(0).put("Connect to Server",new Rectangle2D.Double(this.xmid - 150 ,this.ymid,300,100)); //Join server
+		this.buttons.get(0).put("Host a Server",new Rectangle2D.Double(this.xmid - 150 ,this.ymid + 150,300,100)); //Host Server
+		this.buttons.get(0).put("Settings",new Rectangle2D.Double(this.xmid - 150 ,this.ymid + 300,300,100)); //Settings
 
-		this.pause.add(new Rectangle2D.Double(this.xmid - 150 ,this.ymid - 150,300,100)); //back to menu
-		this.pause.add(new Rectangle2D.Double(this.xmid - 150 ,this.ymid,300,100)); //Settings
+		this.buttons.get(1).put("Return to Menu",new Rectangle2D.Double(this.xmid - 150 ,this.ymid - 150,300,100)); //back to menu
+		this.buttons.get(1).put("Settings",new Rectangle2D.Double(this.xmid - 150 ,this.ymid,300,100)); //Settings
 
-		this.settings.add(new Rectangle2D.Double(this.xmid - 150 ,this.ymid - 150,300,100));//Back to previous screen
+		this.buttons.get(2).put("Go Back",new Rectangle2D.Double(this.xmid - 150 ,this.ymid - 300,300,100));//Back to previous screen
+		this.buttons.get(2).put("Server IP",new Rectangle2D.Double(this.xmid - 150 ,this.ymid - 150,300,100));
+		this.buttons.get(2).put("Color",new Rectangle2D.Double(this.xmid - 150 ,this.ymid,300,100));
+		this.buttons.get(2).put("Name",new Rectangle2D.Double(this.xmid - 150 ,this.ymid + 150,300,100));
+
+		this.inTextToCode.put("Color",0);
+		this.inTextToCode.put("Name",1);
+		this.inTextToCode.put("Server IP",2);
+
+		this.settingStrings.add(new StringBuffer(6));
+		this.settingStrings.add(new StringBuffer(20));
+		this.settingStrings.add(new StringBuffer(32));
+		
+		// this.settingStrings.add(new StringBuilder());
 
 		makeMumsic();
 	} 
@@ -209,7 +225,7 @@ public class MainComponent extends JComponent {
 		this.scorecard.drawOn(g2d);
 
 		if (this.pausecontrol){
-			drawPause(g2d);
+			drawMenu(g2d);
 		}
 		this.levelLock.readLock().unlock();
 	} // paintComponent
@@ -237,6 +253,13 @@ public class MainComponent extends JComponent {
 		this.levelLock.writeLock().unlock();
 		this.nextlevel = true;
 		
+	}
+
+	public void restart(){
+		this.level = 0;
+		changeLevel(0);
+		this.scorecard.reset();
+		this.pausecontrol = false;
 	}
 
 	public long getLevel() {
@@ -363,34 +386,39 @@ public class MainComponent extends JComponent {
 		return false;
 	}
 
-	public boolean hitStartButton(int x, int y){
-		return this.mainMenu.get(0).contains(x,y);
-	}
-	public boolean hitConnectButton(int x, int y){
-		return this.mainMenu.get(1).contains(x,y);
+	// public boolean hitStartButton(int x, int y){
+	// 	return this.mainMenu.get(0).contains(x,y);
+	// }
+	// public boolean hitConnectButton(int x, int y){
+	// 	return this.mainMenu.get(1).contains(x,y);
+	// }
+	
+	// public boolean hitHostButton(int x, int y){
+	// 	return this.mainMenu.get(2).contains(x,y);
+	// }
+
+	// public boolean hitSettingsButton(int x, int y){
+	// 	if (this.inmenu) {
+	// 		return this.mainMenu.get(3).contains(x,y);
+	// 	} else if (this.pausecontrol) {
+	// 		return this.pause.get(1).contains(x,y);
+	// 	}
+
+	public boolean hitButton(int buttset, String buttname, int x, int y) {
+		return this.buttons.get(buttset).get(buttname).contains(x, y);
 	}
 	
-	public boolean hitHostButton(int x, int y){
-		return this.mainMenu.get(2).contains(x,y);
-	}
 
-	public boolean hitSettingsButton(int x, int y){
-		if (this.inmenu) {
-			return this.mainMenu.get(3).contains(x,y);
-		} else if (this.pausecontrol) {
-			return this.pause.get(1).contains(x,y);
-		}
+	// 	return false;
+	// }
 
-		return false;
-	}
+	// public boolean hitLeaveSettings(int x, int y){
+	// 	return this.settings.get(0).contains(x,y);
+	// }
 
-	public boolean hitLeaveSettings(int x, int y){
-		return this.settings.get(0).contains(x,y);
-	}
-
-	public boolean hitToMenu(int x, int y){
-		return this.pause.get(0).contains(x, y);
-	}
+	// public boolean hitToMenu(int x, int y){
+	// 	return this.pause.get(0).contains(x, y);
+	// }
 
 	public void phaseToggle(boolean toggle) {
 		this.hero.setPhase(toggle);
@@ -447,8 +475,8 @@ public class MainComponent extends JComponent {
 			g2d.fill(rect);
 		}
 	}
-	private void drawLevelBackdrop(Graphics2D g2d) {
-		g2d.setColor(Color.WHITE);
+	private void drawBackground(Graphics2D g2d, Color backColor) {
+		g2d.setColor(backColor);
 		g2d.fill(levelBackdrop);
 	}
 	private void drawLevelPlatforms(Graphics2D g2d) {
@@ -473,6 +501,14 @@ public class MainComponent extends JComponent {
 		this.inmenu = !this.inmenu;
 	}
 
+	public void inputText(int field){
+		this.inText = field;
+	}
+	
+	public int getInput(){
+		return this.inText;
+	}
+
 	public void toggleSettings(){
 		this.showSettings = !this.showSettings;
 	}
@@ -489,53 +525,85 @@ public class MainComponent extends JComponent {
 		return this.showSettings;
 	}
 
-	private void drawPause(Graphics2D g2d){
-		g2d.setColor(this.pauseColor);
-		g2d.fill(this.gamePause);
-		if (this.showSettings) {
-			for(Rectangle2D.Double button : this.settings){
-				g2d.setColor(this.pauseColor);
-				g2d.fill(button);
-				g2d.setColor(Color.WHITE);
-				g2d.setFont(new Font("Comic Sans MS", Font.PLAIN, 25)); 
-				g2d.drawString("Placeholder", (int)(button.x+button.width/2 - 70) , (int)(button.y + button.height/2));
-			}
-			
-		} else {
-			for(Rectangle2D.Double button : this.pause){
-				g2d.setColor(this.pauseColor);
-				g2d.fill(button);
-				g2d.setColor(Color.WHITE);
-				g2d.setFont(new Font("Comic Sans MS", Font.PLAIN, 25)); 
-				g2d.drawString("Placeholder", (int)(button.x+button.width/2 - 70) , (int)(button.y + button.height/2));
+	public void readInput(char letter){
+		if (this.inText > -1) {
+			if(this.settingStrings.get(this.inText).length() < this.settingStrings.get(this.inText).capacity())
+				this.settingStrings.get(this.inText).append(letter);
+		}
+	}
+
+	public void backspace() {
+		if (this.inText > -1) {
+			int tLen = this.settingStrings.get(this.inText).length();
+			if(tLen > 0) {
+				this.settingStrings.get(this.inText).setLength(tLen-1);;
 			}
 		}
 	}
 
+	// private void drawPause(Graphics2D g2d){
+	// 	g2d.setColor(this.pauseColor);
+	// 	g2d.fill(this.gamePause);
+	// 	if (this.showSettings) {
+	// 		for(Rectangle2D.Double button : this.settings){
+	// 			g2d.setColor(this.pauseColor);
+	// 			g2d.fill(button);
+	// 			g2d.setColor(Color.WHITE);
+	// 			g2d.setFont(new Font("Comic Sans MS", Font.PLAIN, 25)); 
+	// 			g2d.drawString("Placeholder", (int)(button.x+button.width/2 - 70) , (int)(button.y + button.height/2));
+	// 		}
+			
+	// 	} else {
+	// 		for(Rectangle2D.Double button : this.pause){
+	// 			g2d.setColor(this.pauseColor);
+	// 			g2d.fill(button);
+	// 			g2d.setColor(Color.WHITE);
+	// 			g2d.setFont(new Font("Comic Sans MS", Font.PLAIN, 25)); 
+	// 			g2d.drawString("Placeholder", (int)(button.x+button.width/2 - 70) , (int)(button.y + button.height/2));
+	// 		}
+	// 	}
+	// }
+
 	private void drawMenu(Graphics2D g2d){
-		drawLevelBackdrop(g2d);
-		g2d.setColor(this.pauseColor);
-		if (this.showSettings) {
-			for(Rectangle2D.Double button : this.settings){
-				g2d.setColor(this.pauseColor);
-				g2d.fill(button);
-				g2d.setColor(Color.WHITE);
-				g2d.setFont(new Font("Comic Sans MS", Font.PLAIN, 25)); 
-				g2d.drawString("Placeholder", (int)(button.x+button.width/2 - 70) , (int)(button.y + button.height/2));
-			}
+		int selector = 0;
+		if (this.inmenu) {
+			drawBackground(g2d, Color.WHITE);
 		} else {
-			for(Rectangle2D.Double button : this.mainMenu){
-				g2d.setColor(this.pauseColor);
-				g2d.fill(button);
-				g2d.setColor(Color.WHITE);
-				g2d.setFont(new Font("Comic Sans MS", Font.PLAIN, 25)); 
-				g2d.drawString("Placeholder", (int)(button.x+button.width/2 - 70) , (int)(button.y + button.height/2));
-			}
+			selector = 1;
+			drawBackground(g2d, this.pauseColor);
+		}
+
+		if (this.showSettings){
+			selector = 2;
+		}
+
+		for(String label : this.buttons.get(selector).keySet()){
+			Rectangle2D.Double button = this.buttons.get(selector).get(label);
+			g2d.setColor(this.pauseColor);
+			g2d.fill(button);
+		
+			g2d.setColor(Color.WHITE);
+			g2d.setFont(new Font("Comic Sans MS", Font.PLAIN, 25)); 
+			g2d.drawString(label, (int)(button.x+button.width/2 - label.length()*6.25) , (int)(button.y + button.height/2));
+		}
+		if (this.showSettings) {
+			drawSetStrings(g2d);
+		}
+	}
+
+	private void drawSetStrings(Graphics2D g2d){
+		g2d.setColor(Color.WHITE);
+		g2d.setFont(new Font("Comic Sans MS", Font.PLAIN, 25));
+		for(String label : this.buttons.get(2).keySet()){
+			if(label.contains("Back"))
+				continue;
+			Rectangle2D.Double button = this.buttons.get(2).get(label);
+			g2d.drawString(this.settingStrings.get(this.inTextToCode.get(label)).toString(), (int)(button.x+button.width/2 - this.settingStrings.get(this.inTextToCode.get(label)).length()*6.25) , (int)(button.y + button.height/2 + 30));
 		}
 	}
 	
 	private void drawLevel(Graphics2D g2d) {
-		drawLevelBackdrop(g2d);
+		drawBackground(g2d,Color.WHITE);
 		drawLevelWalls(g2d);
 		drawLevelPlatforms(g2d);
 		drawLevelBombs(g2d);
