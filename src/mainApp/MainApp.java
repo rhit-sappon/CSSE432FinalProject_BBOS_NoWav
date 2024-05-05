@@ -259,4 +259,12 @@ public class MainApp {
 		scanner.close();
 		return levelData;
 	}
+
+	public void connectToServer(){
+		
+	}
+
+	public void startServer(){
+
+	}
 }

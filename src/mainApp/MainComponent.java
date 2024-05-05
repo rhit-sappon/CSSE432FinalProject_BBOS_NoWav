@@ -663,6 +663,14 @@ public class MainComponent extends JComponent {
 		return this.ymid;
 	}
 
+	public String getAddress(){
+		return this.settingStrings.get(2).toString();
+	}
+
+	public String getPort(){
+		return this.settingStrings.get(3).toString();
+	}
+
 	public ArrayList<byte[]> retrieveEntityPacket(){
 		return new ArrayList<byte[]>();
 	}
