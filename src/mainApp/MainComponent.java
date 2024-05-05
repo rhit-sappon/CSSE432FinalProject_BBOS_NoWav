@@ -101,14 +101,17 @@ public class MainComponent extends JComponent {
 		this.buttons.get(2).put("Server IP",new Rectangle2D.Double(this.xmid - 150 ,this.ymid - 150,300,100));
 		this.buttons.get(2).put("Color",new Rectangle2D.Double(this.xmid - 150 ,this.ymid,300,100));
 		this.buttons.get(2).put("Name",new Rectangle2D.Double(this.xmid - 150 ,this.ymid + 150,300,100));
+		this.buttons.get(2).put("Port",new Rectangle2D.Double(this.xmid - 150 ,this.ymid + 300,300,100));
 
 		this.inTextToCode.put("Color",0);
 		this.inTextToCode.put("Name",1);
 		this.inTextToCode.put("Server IP",2);
+		this.inTextToCode.put("Port",3);
 
 		this.settingStrings.add(new StringBuffer(6));
 		this.settingStrings.add(new StringBuffer(20));
 		this.settingStrings.add(new StringBuffer(32));
+		this.settingStrings.add(new StringBuffer(5));
 		
 		// this.settingStrings.add(new StringBuilder());
 

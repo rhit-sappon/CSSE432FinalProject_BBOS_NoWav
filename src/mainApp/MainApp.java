@@ -74,7 +74,10 @@ public class MainApp {
 						component.inputText(1);
 					} else if (component.hitButton(2,"Server IP",e.getX(), e.getY())) {
 						component.inputText(2);
+					} else if (component.hitButton(2,"Port",e.getX(), e.getY())) {
+						component.inputText(3);
 					}
+					
 				} else if (component.isInMenu()) {
 					if (component.hitButton(0,"Play Singleplayer",e.getX(),e.getY())){
 						component.startGame();
