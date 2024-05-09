@@ -54,20 +54,11 @@ public class MainApp {
 
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				// TODO Auto-generated method stub
-				// int xmidclick = e.getX() - component.getXMid();
-				// int ymidclick = -45 + e.getY() - component.getYMid();
-				// System.out.println(xmidclick);
-				// System.out.println(ymidclick);
-				// if( -150 < xmidclick && xmidclick < 150) {
-				// 	if( -150 < ymidclick && ymidclick < -50) {
-				// 		component.startGame();
-				// 	}
-				// }
 				if (component.isSettings()){
 					component.inputText(-1);
 					if (component.hitButton(2,"Go Back",e.getX(), e.getY())) {
 						component.toggleSettings();
+						component.setHeroColor();
 					} else if (component.hitButton(2,"Color",e.getX(), e.getY())) {
 						component.inputText(0);
 					} else if (component.hitButton(2,"Name",e.getX(), e.getY())) {
@@ -139,6 +130,7 @@ public class MainApp {
 						if(component.isSettings()) {
 							component.toggleSettings();
 						}
+						component.setHeroColor();
 					}
 					component.togglePause();
 				}
@@ -162,6 +154,10 @@ public class MainApp {
 				if(e.getKeyCode()==85) {
 					levelSelect(1);
 					//U
+				}
+
+				if(e.getKeyCode()==73) {
+					System.out.println(component.getEntityPositions().get(0));
 				}
 			}
 

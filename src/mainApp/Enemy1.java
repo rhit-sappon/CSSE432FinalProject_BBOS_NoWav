@@ -4,8 +4,8 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 
 public class Enemy1 extends Creature{
-	public Enemy1(int posx, int posy) {
-		super(posx,posy);
+	public Enemy1(int posx, int posy, byte value) {
+		super(posx,posy,value);
 		this.color = Color.PINK;
 	}
 	@Override

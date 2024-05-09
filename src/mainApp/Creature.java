@@ -17,9 +17,11 @@ public abstract class Creature {
 	protected boolean onGround;
 	protected boolean onPlat;
 	protected Color color;
-	public Creature(int posX, int posY) {
+	protected byte entityValue;
+	public Creature(int posX, int posY, byte value) {
 		this.xPosition = posX;
 		this.yPosition = posY;
+		this.entityValue = value;
 		this.isAlive = true;
 		this.rect = new Rectangle2D.Float(xPosition, yPosition, 60, 60);
 		this.onGround = true;
@@ -75,6 +77,10 @@ public abstract class Creature {
 	public boolean isDead() {
 		return !isAlive;
 	}
+
+	public boolean getIsAlive(){
+		return isAlive;
+	}
 	
 	public boolean getPhase() {
 		return phase;
@@ -109,6 +115,12 @@ public abstract class Creature {
 		// TODO Auto-generated method stub
 		
 	}
+	public byte getEntityValue(){
+		return this.entityValue;
+	}
+	public void setEntityValue(byte value){
+		this.entityValue = value;
+	}
 	
 	public void collideWithCreature(Creature c) {
 	} 
@@ -119,5 +131,9 @@ public abstract class Creature {
 	
 	public void onRemove() {
 		
+	}
+
+	public void setColor(Color newColor) {
+		this.color = newColor;
 	}
 }

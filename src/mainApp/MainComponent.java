@@ -11,11 +11,13 @@ import java.awt.geom.Rectangle2D.Float;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
 import java.util.Random;
 import java.awt.Toolkit;
+import java.nio.ByteBuffer;
 
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
@@ -24,6 +26,7 @@ import javax.swing.JComponent;
 public class MainComponent extends JComponent {
 	
 	private Hero hero;
+	private Hero otherHero;
 	ArrayList<Integer[]> levelData = new ArrayList<>();
 	ArrayList<Rectangle2D.Double> levelWalls;
 	Rectangle2D.Double levelBackdrop;
@@ -42,6 +45,8 @@ public class MainComponent extends JComponent {
 	// HashMap<String,Rectangle2D.Double> mainMenu = new HashMap<>();
 	// HashMap<String,Rectangle2D.Double> pause = new HashMap<>();
 	// HashMap<String,Rectangle2D.Double> settings = new HashMap<>();
+
+	private static final byte EPACKET = 2;
 	
 
 	private boolean isUnix = System.getProperty("os.name").startsWith("Linux");
@@ -69,6 +74,14 @@ public class MainComponent extends JComponent {
 	private Color pauseColor = new Color(0.1f,0.1f,0.1f,0.5f);
 	private ArrayList<StringBuffer> settingStrings = new ArrayList<>();
 	private HashMap<String,Integer> inTextToCode = new HashMap<String,Integer>();
+	private String clientName;
+
+	private boolean isHost = true;
+	private boolean isServer = false;
+	private boolean hasClient = false;
+	private boolean isNewName = false;
+
+	private int prevObj = 0;
 	
 	public MainComponent(ArrayList<Integer[]> levelData, int XDIM, int YDIM) {
 		super();
@@ -112,6 +125,12 @@ public class MainComponent extends JComponent {
 		this.settingStrings.add(new StringBuffer(20));
 		this.settingStrings.add(new StringBuffer(32));
 		this.settingStrings.add(new StringBuffer(5));
+
+		this.settingStrings.get(0).append("18A1F1");
+		this.settingStrings.get(1).append("Name");
+		this.settingStrings.get(2).append("127.0.0.1");
+		this.settingStrings.get(3).append("25565");
+		setHeroColor();
 		
 		// this.settingStrings.add(new StringBuilder());
 
@@ -174,12 +193,13 @@ public class MainComponent extends JComponent {
 			for(Creature enemy : objects) {
 				enemy.collidesWithHero(this.hero,this.scorecard);
 				enemy.moveTowardsHero(this.hero);
-				if(this.handleCeilingCollision(enemy))
-					enemy.updateY(this.step);
-				if(this.handleWallCollisionX(enemy))
-					enemy.updateX(this.step);
-				enemy.updateRect();
-			
+				if (this.isHost) {
+					if(this.handleCeilingCollision(enemy))
+						enemy.updateY(this.step);
+					if(this.handleWallCollisionX(enemy))
+						enemy.updateX(this.step);
+					enemy.updateRect();
+				}
 			}
 		
 		if(this.hero.getOnGround() || this.hero.getOnPlat())
@@ -219,6 +239,9 @@ public class MainComponent extends JComponent {
 			drawLevel(g2d);
 			
 			this.hero.drawOn(g2d);
+			if (this.hasClient) {
+				this.otherHero.drawOn(g2d);
+			}
 			if(objects.size() > 0)
 				for(Creature enemy : objects) {
 					enemy.drawOn(g2d);
@@ -263,6 +286,9 @@ public class MainComponent extends JComponent {
 		changeLevel(0);
 		this.scorecard.reset();
 		this.pausecontrol = false;
+		this.hasClient = false;
+		this.isHost = true;
+		this.isServer = false;
 	}
 
 	public long getLevel() {
@@ -437,6 +463,7 @@ public class MainComponent extends JComponent {
 		this.levelPlatforms = new ArrayList<Rectangle2D.Double>();
 		this.levelBombs = new ArrayList<Rectangle2D.Double>();
 		this.objects = new ArrayList<Creature>();
+		byte entityValue = 1;
 		int spacingx = 0;
 		int spacingy = 0;
 		for(int r = 0; r<this.levelData.size();r++) {
@@ -446,7 +473,11 @@ public class MainComponent extends JComponent {
 					levelWalls.add(new Rectangle2D.Double(spacingx,spacingy,60,60));
 				}
 				else if(row[c]==2) {
-					this.hero.setPosition(spacingx,spacingy);
+					if (this.isHost) {
+						this.hero.setPosition(spacingx, spacingy);
+					} else {
+						this.otherHero.setPosition(spacingx, spacingy);
+					}
 				}
 				else if(row[c]==3) {
 					levelPlatforms.add(new Rectangle2D.Double(spacingx,spacingy,60,20));
@@ -454,17 +485,27 @@ public class MainComponent extends JComponent {
 					this.bombs += 1;
 					levelBombs.add(new Rectangle2D.Double(spacingx+5,spacingy+5,50,50));
 				}else if(row[c]==5) {
-					Enemy1 enemy = new Enemy1(spacingx,spacingy);
+					Enemy1 enemy = new Enemy1(spacingx,spacingy, entityValue);
+					entityValue++;
 					objects.add(enemy);
 				}else if(row[c]==6) {
-					Enemy2 enemy = new Enemy2(spacingx,spacingy, this.xdim, this.ydim);
+					Enemy2 enemy = new Enemy2(spacingx,spacingy, entityValue, this.xdim, this.ydim);
+					entityValue++;
 					objects.add(enemy);
+				} else if (row[c]==7){
+					if (this.isHost) {
+						if (this.hasClient)
+							this.otherHero.setPosition(spacingx, spacingy);
+					} else {
+						this.hero.setPosition(spacingx, spacingy);
+					}
 				}
 				spacingx+=60;
 			}
 			spacingx=0;
 			spacingy+=60;
 		}
+		this.prevObj = this.objects.size();
 	}
 	
 	public void timer() {
@@ -528,10 +569,34 @@ public class MainComponent extends JComponent {
 		return this.showSettings;
 	}
 
+	public boolean isHost(){
+		return this.isHost;
+	}
+
+	public boolean hasClient(){
+		return this.hasClient;
+	}
+
+	public boolean isServer(){
+		return this.isServer;
+	}
+	
+	public boolean isNewName(){
+		return this.isNewName;
+	}
+
+	public void toggleNewName(){
+		this.isNewName = !this.isNewName;
+	}
+
 	public void readInput(char letter){
 		if (this.inText > -1) {
-			if(this.settingStrings.get(this.inText).length() < this.settingStrings.get(this.inText).capacity())
+			if(this.settingStrings.get(this.inText).length() < this.settingStrings.get(this.inText).capacity()){
 				this.settingStrings.get(this.inText).append(letter);
+				if(this.inText == 1){
+					this.isNewName = true;
+				}
+			}
 		}
 	}
 
@@ -539,7 +604,10 @@ public class MainComponent extends JComponent {
 		if (this.inText > -1) {
 			int tLen = this.settingStrings.get(this.inText).length();
 			if(tLen > 0) {
-				this.settingStrings.get(this.inText).setLength(tLen-1);;
+				this.settingStrings.get(this.inText).setLength(tLen-1);
+				if(this.inText == 1){
+					this.isNewName = true;
+				}
 			}
 		}
 	}
@@ -653,6 +721,132 @@ public class MainComponent extends JComponent {
 			this.levelData.add(rowNum);
 		}
 		scanner.close();
+	}
+
+	private byte[] getEntityPosHelper(byte entityValue, float xPos, float yPos, byte lives) {
+		ByteBuffer entityArray = ByteBuffer.allocate(20);
+		entityArray.put((byte)19);
+		entityArray.put(EPACKET);
+		entityArray.put(this.hero.getEntityValue());
+		entityArray.putFloat(xPos);
+		entityArray.putFloat(yPos);
+		entityArray.put(lives);
+		return entityArray.array();
+	}
+
+	public byte[] getUserPack() {
+		byte packlen = (byte)(4+this.settingStrings.get(1).length()+1);
+		byte r = (byte)Integer.parseInt(this.settingStrings.get(0).substring(0,2),16);
+		byte g = (byte)Integer.parseInt(this.settingStrings.get(0).substring(2,4),16);
+		byte b = (byte)Integer.parseInt(this.settingStrings.get(0).substring(4,6),16);
+
+		ByteBuffer entityArray = ByteBuffer.allocate(packlen+1);
+		entityArray.put(packlen);
+		entityArray.put((byte)0);
+		entityArray.put(r);
+		entityArray.put(g);
+		entityArray.put(b);
+
+		for (char letter : this.settingStrings.get(1).toString().toCharArray()){
+			entityArray.putChar(letter);
+		}
+		entityArray.put((byte) 0);
+
+		return entityArray.array();
+	}
+
+	public byte[] getServerPack() {
+		ByteBuffer entityArray = ByteBuffer.allocate(11);
+		entityArray.put((byte)10);
+		entityArray.put((byte)1);
+		entityArray.put((byte)0);
+		entityArray.putLong(this.level);
+
+		return entityArray.array();
+	}
+
+	public ArrayList<byte[]> getEntityPositions(){
+		ArrayList<byte[]> sendArray = new ArrayList<>();
+		byte [] entityArray;
+		entityArray = getEntityPosHelper(this.hero.getEntityValue(), this.hero.getXPos(), this.hero.getYPos(), (byte) this.scorecard.getLives());
+		sendArray.add(entityArray);
+		if (this.isHost) {
+			byte deadValue = 0;
+			if (this.prevObj > this.objects.size()){
+				deadValue = 3;
+				this.prevObj = this.objects.size();
+			}
+			for (byte i = 0; i < this.objects.size(); i++ ){
+				Creature entity = this.objects.get(i);
+				if (deadValue == 3){
+					deadValue = (byte)(entity.getEntityValue()%2 + 1);
+				}
+				sendArray.add(getEntityPosHelper(entity.getEntityValue(), entity.getXPos(), entity.getYPos(), (byte)1));
+				entity.setEntityValue((byte)1);
+			}
+			if (deadValue != 0) {
+				sendArray.add(getEntityPosHelper(deadValue, 0.0f, 0.0f, (byte)0));
+
+			}
+		}
+		
+		return sendArray;
+
+	}
+
+	public void setEntityPos(byte[] entityPos){
+		if (entityPos[1] == 0) {
+			this.otherHero.setPosition(ByteBuffer.wrap(entityPos).getFloat(2), ByteBuffer.wrap(entityPos).getFloat(10));
+			if (this.scorecard.getLives() > entityPos[18]) {
+				this.scorecard.loseLife();
+			}
+		} else {
+			switch (entityPos[1]) {
+				case 1:
+					if (entityPos[18] == 0) {
+						this.objects.get(0).die(); 
+					} else {
+						this.objects.get(0).setPosition(ByteBuffer.wrap(entityPos).getFloat(2), ByteBuffer.wrap(entityPos).getFloat(10));
+					}
+					break;
+				case 2:
+					if (entityPos[18] == 0) {
+						this.objects.get(1).die(); 
+					} else {
+						int index2 = this.objects.size() - 1;
+						this.objects.get(index2).setPosition(ByteBuffer.wrap(entityPos).getFloat(2), ByteBuffer.wrap(entityPos).getFloat(10));
+					}
+					break;
+				default:
+					for (Creature entity : this.objects) {
+						entity.die();
+					}
+					break;
+			}
+		}
+
+	}
+
+	public void setHeroColor() {
+		int r = Integer.parseInt(this.settingStrings.get(0).substring(0,2),16);
+		int g = Integer.parseInt(this.settingStrings.get(0).substring(2,4),16);
+		int b = Integer.parseInt(this.settingStrings.get(0).substring(4,6),16);
+		Color newColor = new Color(r, g, b);
+		this.hero.setColor(newColor);
+	}
+
+	public void setOtherColor(byte[] packet) {
+		Color newColor = new Color(packet[1], packet[2], packet[3]);
+		this.otherHero.setColor(newColor);
+		StringBuffer name = new StringBuffer();
+		int i = 4;
+		char letter = (char) packet[i];
+		while (letter != 0) {
+			name.append(letter);
+			i++;
+			letter = (char) packet[i];
+		}
+		this.clientName = name.toString();
 	}
 
 	public int getXMid(){

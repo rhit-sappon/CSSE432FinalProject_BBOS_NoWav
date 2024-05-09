@@ -10,8 +10,8 @@ public class Enemy2 extends Creature{
 	private boolean fear;
 	private int xdim;
 	private int ydim;
-	public Enemy2(int posx, int posy, int XDIM, int YDIM) {
-		super(posx, posy);
+	public Enemy2(int posx, int posy, byte value, int XDIM, int YDIM) {
+		super(posx, posy, value);
 		this.color = Color.RED;
 		this.xdim = XDIM;
 		this.ydim = YDIM;
