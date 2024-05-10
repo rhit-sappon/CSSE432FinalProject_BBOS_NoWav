@@ -229,13 +229,13 @@ public class MainComponent extends JComponent {
 	protected void paintComponent(Graphics g) {
 		unixSync();
 		Graphics2D g2d = (Graphics2D) g;
-
-		if(this.inmenu){
-			drawMenu(g2d);
-			return;
-		}
 		
 		this.levelLock.readLock().lock();
+		if(this.inmenu){
+			drawMenu(g2d);
+			this.levelLock.readLock().unlock();
+			return;
+		}
 		if (this.hero.isAlive) {
 			drawLevel(g2d);
 			

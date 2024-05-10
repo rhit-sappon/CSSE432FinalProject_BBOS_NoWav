@@ -210,11 +210,14 @@ public class MainApp {
 		mainApp.setUpViewer();
 		mainApp.runApp();
 		mainApp.setFrameTitle("Level " + mainApp.component.getLevel());
-		// Thread netThread = new Thread(){
-		// 	public void run() {
-				
-		// 	};
-		// }
+		Thread drawThread = new Thread(){
+			public void run() {
+				while (true) {
+					mainApp.repaint();
+				}
+			};
+		};
+		drawThread.start();
 //		Timer t = new Timer(DELAY, new ActionListener() {
 //			@Override
 //			public void actionPerformed(ActionEvent arg0) {
@@ -228,7 +231,7 @@ public class MainApp {
 			
 			time  = 1*System.nanoTime();
 			mainApp.component.physics((float) (((float)deltaT)/10000000.00));
-			mainApp.repaint();
+			// mainApp.repaint();
 			deltaT = 1*System.nanoTime() - time;
 			// mainApp.levelSelect();
 			// try{

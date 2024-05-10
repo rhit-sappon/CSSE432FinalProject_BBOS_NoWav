@@ -57,6 +57,8 @@ public class serverThread extends Thread {
             receiver = new serverReceiver(this.component, this.clientSocket);
             receiver.start();
 
+            System.out.println("Woah how!!1");
+
             try {
                 sendstream = new DataOutputStream(this.clientSocket.getOutputStream());
             } catch (IOException e) {
