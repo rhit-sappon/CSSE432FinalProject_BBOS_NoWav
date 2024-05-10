@@ -273,7 +273,7 @@ public class MainApp {
 	public void connectToServer(){
 		this.component.toggleisHost();
 		this.client = new clientThread(component);
-		this.client.run();
+		this.client.start();
 	}
 
 	public void startServer(){

@@ -1,5 +1,6 @@
 package mainApp;
 
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.lang.Runnable;
@@ -19,6 +20,7 @@ public class clientThread extends Thread {
     private DataOutputStream sendstream;
     private serverReceiver receiver;
     private ReadWriteLock lock;
+    private DataInputStream ingest;
     private static final long tickrate = 7812500; // 128th of a second in ns
 
     public clientThread(MainComponent component){
@@ -36,10 +38,13 @@ public class clientThread extends Thread {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-
-        receiver = new serverReceiver(this.component, this.clientSocket);
-        receiver.start();
-
+        this.component.toggleHasClient();
+        try {
+            this.ingest = new DataInputStream(this.clientSocket.getInputStream());
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         try {
             sendstream = new DataOutputStream(this.clientSocket.getOutputStream());
         } catch (IOException e) {
@@ -47,10 +52,32 @@ public class clientThread extends Thread {
             e.printStackTrace();
         }
 
+        byte[] pac = {'u','e'};
+        try {
+            sendstream.write(pac);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        try {
+            this.ingest.read(pac);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        System.out.println((char)pac[1]);
+
+        receiver = new serverReceiver(this.component, this.ingest);
+        receiver.start();
+
+        // receiver = new serverReceiver(this.component, this.clientSocket);
+        // receiver.start();
+
+
         ArrayList<byte[]> packets;
         long time = 0;
         long deltaT = 10;
-        while (this.component.isHost()) {
+        while (this.component.hasClient()) {
             time  = 1*System.nanoTime();
             deltaT = 1*System.nanoTime() - time;
             packets = new ArrayList<>();
@@ -85,9 +112,14 @@ public class clientThread extends Thread {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                     this.component.toggleHasClient();
+                    try {
+                        clientSocket.close();
+                    } catch (IOException e1) {
+                        // TODO Auto-generated catch block
+                        e1.printStackTrace();
+                    }
                 }
             }
-
             try {
                 TimeUnit.NANOSECONDS.sleep(this.tickrate - deltaT);
             } catch (InterruptedException e) {

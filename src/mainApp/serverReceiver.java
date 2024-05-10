@@ -4,6 +4,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.lang.Runnable;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
 
@@ -18,32 +19,34 @@ public class serverReceiver extends Thread {
     private DataInputStream ingest;
     private ReadWriteLock lock;
 
-    public serverReceiver(MainComponent component, Socket clientSocket){
+    public serverReceiver(MainComponent component, DataInputStream clientSocket){
         this.component = component;
         // this.port = Integer.parseInt(this.component.getPort());
-        this.clientSocket = clientSocket;
+        // this.clientSocket = clientSocket;
         this.lock = this.component.getLock();
-        try {
-            this.ingest = new DataInputStream(clientSocket.getInputStream());
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        this.ingest = clientSocket;
+        // try {
+            // this.ingest = new DataInputStream(clientSocket.getInputStream());
+        // } catch (IOException e) {
+        //     // TODO Auto-generated catch block
+        //     e.printStackTrace();
+        // }
     }
 
     private byte[] receivePacket(){
         byte[] length = {1};
         try {
-            this.ingest.read(length,0, length[0]);
+            this.ingest.read(length);
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
+            return length;
         }
-        System.out.println(length);
+        // System.out.println(length[0]);
         byte[] packet = new byte[length[0]];
 
         try {
-            this.ingest.read(packet,0,length[0]);
+            this.ingest.read(packet);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -54,6 +57,8 @@ public class serverReceiver extends Thread {
 
     private void parsePacket(byte[] packet){
         this.lock.writeLock().lock();
+        // System.out.println(packet[0]);
+        // System.out.println(packet[1]);
         switch (packet[0]) {
             case 0:
                 this.component.setOtherColor(packet);
@@ -63,6 +68,7 @@ public class serverReceiver extends Thread {
                 break;
             case 2:
                 this.component.setEntityPos(packet);
+                // System.out.println(packet[18]);
                 break;
             default:
                 break;
@@ -75,6 +81,9 @@ public class serverReceiver extends Thread {
 
         while (this.component.hasClient() || this.component.isHost()) {
             byte[] packet = receivePacket();
+            if (packet.length == 1) {
+                break;
+            }
             parsePacket(packet);
             
             // long time = 0;
@@ -90,7 +99,7 @@ public class serverReceiver extends Thread {
             //     }
             // }
         }
-        
+        return;
         // while (this.component)
     }
 

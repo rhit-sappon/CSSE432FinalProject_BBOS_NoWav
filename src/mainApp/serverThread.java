@@ -1,5 +1,6 @@
 package mainApp;
 
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -23,6 +24,7 @@ public class serverThread extends Thread {
     private int sendState;
     private DataOutputStream sendstream;
     private ReadWriteLock lock;
+    private DataInputStream ingest;
 
     public serverThread(MainComponent component){
         this.component = component;
@@ -42,6 +44,13 @@ public class serverThread extends Thread {
         while (true) {
             this.lock.readLock().lock();
             if(!this.component.isServer()){
+                try {
+                    serverSocket.close();
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+                this.lock.readLock().unlock();
                 break;
             }
             this.lock.readLock().unlock();
@@ -54,12 +63,13 @@ public class serverThread extends Thread {
             this.lock.writeLock().lock();
             this.component.toggleHasClient();
             this.lock.writeLock().unlock();
-
-            receiver = new serverReceiver(this.component, this.clientSocket);
-            receiver.start();
-
-            System.out.println("Woah how!!1");
-
+            try {
+                this.ingest = new DataInputStream(this.clientSocket.getInputStream());
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            byte[] pac = {'e','u'};
             try {
                 sendstream = new DataOutputStream(this.clientSocket.getOutputStream());
             } catch (IOException e) {
@@ -67,6 +77,24 @@ public class serverThread extends Thread {
                 e.printStackTrace();
                 this.component.toggleHasClient();
             }
+            try {
+                sendstream.write(pac);
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            try {
+                this.ingest.read(pac);
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            System.out.println((char)pac[1]);
+            
+            // System.out.println(pac);
+
+            receiver = new serverReceiver(this.component, this.ingest);
+            receiver.start();
             
             
             
@@ -116,6 +144,12 @@ public class serverThread extends Thread {
                         // TODO Auto-generated catch block
                         e.printStackTrace();
                         this.component.toggleHasClient();
+                        try {
+                            clientSocket.close();
+                        } catch (IOException e1) {
+                            // TODO Auto-generated catch block
+                            e1.printStackTrace();
+                        }
                     }
                 }
                 try {

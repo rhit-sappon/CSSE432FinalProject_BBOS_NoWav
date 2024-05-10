@@ -39,9 +39,9 @@ public abstract class Creature {
 		this.yVelocity = velocity;
 		}
 	}
-	public void setPosition(float x, float f) {
+	public void setPosition(float x, float y) {
 		this.xPosition = x;
-		this.yPosition = f;
+		this.yPosition = y;
 	}
 	public void die() {
 		this.isAlive = false;

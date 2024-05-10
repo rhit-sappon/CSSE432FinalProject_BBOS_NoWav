@@ -89,6 +89,7 @@ public class MainComponent extends JComponent {
 		this.hero = new Hero(10, 10);
 		this.otherHero = new Hero(10, 10);
 		this.scorecard = new Scorecard(XDIM,YDIM);
+		this.scorecard.setLife(3);
 		this.levelData=levelData;
 		this.xdim = XDIM;
 		this.ydim = YDIM;
@@ -459,6 +460,7 @@ public class MainComponent extends JComponent {
 	public void interpolateLevel() {
 		this.bombs = 0;
 		this.hero.setPosition(240,780);
+		this.otherHero.setPosition(240,780);
 		this.updateHeroYVel(0);
 		this.updateHeroXVel(0);
 		this.hero.setOnGround(true);
@@ -489,11 +491,11 @@ public class MainComponent extends JComponent {
 					levelBombs.add(new Rectangle2D.Double(spacingx+5,spacingy+5,50,50));
 				}else if(row[c]==5) {
 					Enemy1 enemy = new Enemy1(spacingx,spacingy, entityValue);
-					entityValue++;
+					entityValue = (byte)(entityValue + 1);
 					objects.add(enemy);
 				}else if(row[c]==6) {
 					Enemy2 enemy = new Enemy2(spacingx,spacingy, entityValue, this.xdim, this.ydim);
-					entityValue++;
+					entityValue = (byte)(entityValue + 1);
 					objects.add(enemy);
 				} else if (row[c]==7){
 					if (this.isHost) {
@@ -545,6 +547,7 @@ public class MainComponent extends JComponent {
 	}
 	
 	public void startGame(){
+		this.interpolateLevel();
 		this.inmenu = !this.inmenu;
 	}
 
@@ -733,7 +736,7 @@ public class MainComponent extends JComponent {
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			//e.printStackTrace();
-			System.out.println("bruh");
+			// System.out.println("bruh");
 		}
 		levelData.clear();
 		Scanner scanner = new Scanner(file);
@@ -794,6 +797,7 @@ public class MainComponent extends JComponent {
 		ArrayList<byte[]> sendArray = new ArrayList<>();
 		byte [] entityArray;
 		entityArray = getEntityPosHelper(this.hero.getEntityValue(), this.hero.getXPos(), this.hero.getYPos(), (byte) this.scorecard.getLives());
+		// System.out.println(scorecard.getLives());
 		sendArray.add(entityArray);
 		if (this.isHost) {
 			byte deadValue = 0;
@@ -807,6 +811,7 @@ public class MainComponent extends JComponent {
 					deadValue = (byte)(entity.getEntityValue()%2 + 1);
 				}
 				sendArray.add(getEntityPosHelper(entity.getEntityValue(), entity.getXPos(), entity.getYPos(), (byte)1));
+				// System.out.println(entity.getEntityValue());
 				entity.setEntityValue((byte)1);
 			}
 			if (deadValue != 0) {
@@ -822,6 +827,9 @@ public class MainComponent extends JComponent {
 	public void setEntityPos(byte[] entityPos){
 		if (entityPos[1] == 0) {
 			this.otherHero.setPosition(ByteBuffer.wrap(entityPos).getFloat(2), ByteBuffer.wrap(entityPos).getFloat(10));
+			this.otherHero.updateRect();
+			// System.out.println(ByteBuffer.wrap(entityPos).getFloat(2));
+			// System.out.println(entityPos[17]);
 			if (this.scorecard.getLives() > entityPos[18]) {
 				this.scorecard.loseLife();
 			}
@@ -832,6 +840,7 @@ public class MainComponent extends JComponent {
 						this.objects.get(0).die(); 
 					} else {
 						this.objects.get(0).setPosition(ByteBuffer.wrap(entityPos).getFloat(2), ByteBuffer.wrap(entityPos).getFloat(10));
+						this.objects.get(0).updateRect();
 					}
 					break;
 				case 2:
@@ -840,6 +849,7 @@ public class MainComponent extends JComponent {
 					} else {
 						int index2 = this.objects.size() - 1;
 						this.objects.get(index2).setPosition(ByteBuffer.wrap(entityPos).getFloat(2), ByteBuffer.wrap(entityPos).getFloat(10));
+						this.objects.get(index2).updateRect();
 					}
 					break;
 				default:
