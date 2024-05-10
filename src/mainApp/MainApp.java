@@ -210,6 +210,11 @@ public class MainApp {
 		mainApp.setUpViewer();
 		mainApp.runApp();
 		mainApp.setFrameTitle("Level " + mainApp.component.getLevel());
+		// Thread netThread = new Thread(){
+		// 	public void run() {
+				
+		// 	};
+		// }
 //		Timer t = new Timer(DELAY, new ActionListener() {
 //			@Override
 //			public void actionPerformed(ActionEvent arg0) {
@@ -226,18 +231,14 @@ public class MainApp {
 			mainApp.repaint();
 			deltaT = 1*System.nanoTime() - time;
 			// mainApp.levelSelect();
-			if(mainApp.component.nextLevel())
-				mainApp.setFrameTitle("Level " + mainApp.component.getLevel());
-			if(mainApp.component.isServer()){
-				mainApp.server = new serverThread(mainApp.component);
-				mainApp.server.run();
-			}
 			// try{
 			// 	TimeUnit.NANOSECONDS.sleep(mainApp.limit - deltaT);
 			// } catch (Exception e) {
 			// 	// TODO Auto-generated catch block
 			// 	e.printStackTrace();
 			// }
+			if(mainApp.component.nextLevel())
+				mainApp.setFrameTitle("Level " + mainApp.component.getLevel());
 
 		}
 	} // main
@@ -274,5 +275,7 @@ public class MainApp {
 
 	public void startServer(){
 		this.component.toggleServer();
+		this.server = new serverThread(this.component);
+		this.server.start();
 	}
 }

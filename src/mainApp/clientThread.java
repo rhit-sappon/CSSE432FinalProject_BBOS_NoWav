@@ -10,7 +10,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 
 import javax.swing.JFrame;
 
-public class clientThread implements Runnable {
+public class clientThread extends Thread {
 
     private MainComponent component;
     private String address;

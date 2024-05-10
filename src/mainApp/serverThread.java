@@ -11,7 +11,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 
 import javax.swing.JFrame;
 
-public class serverThread implements Runnable {
+public class serverThread extends Thread {
 
     private MainComponent component;
     private int port;
@@ -38,14 +38,21 @@ public class serverThread implements Runnable {
             e.printStackTrace();
         }
 
-        while (this.component.isServer()) {
+        while (true) {
+            this.lock.readLock().lock();
+            if(!this.component.isServer()){
+                break;
+            }
+            this.lock.readLock().unlock();
             try {
                 this.clientSocket = serverSocket.accept();
             } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
+            this.lock.writeLock().lock();
             this.component.toggleHasClient();
+            this.lock.writeLock().unlock();
 
             receiver = new serverReceiver(this.component, this.clientSocket);
             receiver.run();
@@ -112,8 +119,8 @@ public class serverThread implements Runnable {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-            }
 
+            }
         }
         
         // while (this.component)

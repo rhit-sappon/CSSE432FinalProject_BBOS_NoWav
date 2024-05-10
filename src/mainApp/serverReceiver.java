@@ -9,7 +9,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 
 import javax.swing.JFrame;
 
-public class serverReceiver implements Runnable {
+public class serverReceiver extends Thread {
 
     private MainComponent component;
     // private int port;
