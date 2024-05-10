@@ -29,6 +29,8 @@ import javax.swing.Timer;
 public class MainApp {
 	private static final int XDIM = 20;
 	private static final int YDIM= 15;
+	private serverThread server;
+	private clientThread client;
 
 	private static final int DELAY = 10;
 	private MainComponent component;
@@ -73,8 +75,10 @@ public class MainApp {
 					if (component.hitButton(0,"Play Singleplayer",e.getX(),e.getY())){
 						component.startGame();
 					} else if(component.hitButton(0, "Connect to Server",e.getX(),e.getY())){
+						connectToServer();
 						component.startGame();
 					} else if(component.hitButton(0, "Host a Server", e.getX(),e.getY())){
+						startServer();
 						component.startGame();
 					} else if(component.hitButton(0,"Settings",e.getX(),e.getY())){
 						component.toggleSettings();
@@ -257,10 +261,14 @@ public class MainApp {
 	}
 
 	public void connectToServer(){
-		
+		this.component.toggleisHost();
+		this.client = new clientThread(component);
+		this.client.run();
 	}
 
 	public void startServer(){
-
+		this.component.toggleServer();
+		this.server = new serverThread(component);
+		this.server.run();
 	}
 }

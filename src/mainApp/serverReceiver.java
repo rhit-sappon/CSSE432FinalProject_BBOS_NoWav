@@ -52,7 +52,12 @@ public class serverReceiver implements Runnable {
             case 0:
                 this.component.setOtherColor(packet);
                 break;
-        
+            case 1:
+                this.component.setLevel(packet);
+                break;
+            case 2:
+                this.component.setEntityPos(packet);
+                break;
             default:
                 break;
         }

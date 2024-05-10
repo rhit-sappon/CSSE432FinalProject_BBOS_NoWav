@@ -4,6 +4,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.lang.Runnable;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 import javax.swing.JFrame;
 
@@ -42,14 +43,43 @@ public class clientThread implements Runnable {
             e.printStackTrace();
         }
 
-
+        ArrayList<byte[]> packets;
         long time = 0;
         long deltaT = 10;
-        while (true) {
+        while (this.component.isHost()) {
             time  = 1*System.nanoTime();
             deltaT = 1*System.nanoTime() - time;
-
-
+            packets = new ArrayList<>();
+            for (int i = 0; i < 2; i++) {
+                switch (i) {
+                    case 0:
+                        if (this.component.isNewName()){
+                            this.component.toggleNewName();
+                            packets.add(this.component.getUserPack());
+                        }   
+                        break;
+                    case 1:
+                        packets.addAll(this.component.getEntityPositions());
+                        break;
+                    default:
+                        break;
+                }
+            }
+            for(byte[] packet : packets) {
+                try {
+                    sendstream.writeByte(packet[0] + 1);
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+                try {
+                    sendstream.write(packet);
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                    this.component.toggleHasClient();
+                }
+            }
 
             try {
                 TimeUnit.NANOSECONDS.sleep(this.tickrate - deltaT);

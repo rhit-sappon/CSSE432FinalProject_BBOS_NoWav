@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.lang.Runnable;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 import javax.swing.JFrame;
 
@@ -40,6 +41,7 @@ public class serverThread implements Runnable {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
+            this.component.toggleHasClient();
 
             receiver = new serverReceiver(this.component, this.clientSocket);
             receiver.run();
@@ -49,28 +51,54 @@ public class serverThread implements Runnable {
             } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
+                this.component.toggleHasClient();
             }
+            
             
             
             long time = 0;
             long deltaT = 10;
-            byte[] packet;
+            ArrayList<byte[]> packets;
+            // this.component.toggleNewName();
+            // this.component.toggleNewLevel();
             while (this.component.hasClient()) {
                 time  = 1*System.nanoTime();
                 deltaT = 1*System.nanoTime() - time;
-                for (int i = 0; i < 5; i++) {
+                packets = new ArrayList<>();
+                for (int i = 0; i < 3; i++) {
                     switch (i) {
                         case 0:
                             if (this.component.isNewName()){
                                 this.component.toggleNewName();
-                                packet = this.component.getUserPack();
+                                packets.add(this.component.getUserPack());
                             }   
                             break;
                         case 1:
-                            // packet = 
+                            if (this.component.isNewLevel()){
+                                this.component.toggleNewLevel();
+                                packets.add(this.component.getServerPack());
+                            }
+                            break;
+                        case 2:
+                            packets.addAll(this.component.getEntityPositions());
                             break;
                         default:
                             break;
+                    }
+                }
+                for(byte[] packet : packets) {
+                    try {
+                        sendstream.writeByte(packet[0] + 1);
+                    } catch (IOException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                    try {
+                        sendstream.write(packet);
+                    } catch (IOException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                        this.component.toggleHasClient();
                     }
                 }
                 try {

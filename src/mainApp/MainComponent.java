@@ -80,6 +80,7 @@ public class MainComponent extends JComponent {
 	private boolean isServer = false;
 	private boolean hasClient = false;
 	private boolean isNewName = false;
+	private boolean isNewLevel = false;
 
 	private int prevObj = 0;
 	
@@ -278,6 +279,7 @@ public class MainComponent extends JComponent {
 		interpolateLevel();
 		this.levelLock.writeLock().unlock();
 		this.nextlevel = true;
+		this.isNewLevel = true;
 		
 	}
 
@@ -573,12 +575,25 @@ public class MainComponent extends JComponent {
 		return this.isHost;
 	}
 
+	public void toggleisHost(){
+		this.isHost = !this.isHost;
+	}
+
+
 	public boolean hasClient(){
 		return this.hasClient;
 	}
 
+	public void toggleHasClient(){
+		this.hasClient = !this.hasClient;
+	}
+
 	public boolean isServer(){
 		return this.isServer;
+	}
+
+	public void toggleServer(){
+		this.isServer = !this.isServer;
 	}
 	
 	public boolean isNewName(){
@@ -588,6 +603,15 @@ public class MainComponent extends JComponent {
 	public void toggleNewName(){
 		this.isNewName = !this.isNewName;
 	}
+
+	public boolean isNewLevel(){
+		return this.isNewLevel;
+	}
+
+	public void toggleNewLevel(){
+		this.isNewLevel = !this.isNewLevel;
+	}
+
 
 	public void readInput(char letter){
 		if (this.inText > -1) {
@@ -847,6 +871,12 @@ public class MainComponent extends JComponent {
 			letter = (char) packet[i];
 		}
 		this.clientName = name.toString();
+	}
+
+	public void setLevel(byte[] packet) {
+		ByteBuffer levelpack = ByteBuffer.wrap(packet);
+		this.level = levelpack.getLong(2);
+		this.changeLevel(0);
 	}
 
 	public int getXMid(){
