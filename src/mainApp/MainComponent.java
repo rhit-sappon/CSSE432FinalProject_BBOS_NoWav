@@ -87,6 +87,7 @@ public class MainComponent extends JComponent {
 	public MainComponent(ArrayList<Integer[]> levelData, int XDIM, int YDIM) {
 		super();
 		this.hero = new Hero(10, 10);
+		this.otherHero = new Hero(10, 10);
 		this.scorecard = new Scorecard(XDIM,YDIM);
 		this.levelData=levelData;
 		this.xdim = XDIM;
