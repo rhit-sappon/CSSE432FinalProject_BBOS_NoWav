@@ -79,6 +79,7 @@ public class MainApp {
 						component.startGame();
 					} else if(component.hitButton(0, "Host a Server", e.getX(),e.getY())){
 						startServer();
+						System.out.println("browhat");
 						component.startGame();
 					} else if(component.hitButton(0,"Settings",e.getX(),e.getY())){
 						component.toggleSettings();
@@ -227,12 +228,17 @@ public class MainApp {
 			// mainApp.levelSelect();
 			if(mainApp.component.nextLevel())
 				mainApp.setFrameTitle("Level " + mainApp.component.getLevel());
+			if(mainApp.component.isServer()){
+				mainApp.server = new serverThread(mainApp.component);
+				mainApp.server.run();
+			}
 			// try{
 			// 	TimeUnit.NANOSECONDS.sleep(mainApp.limit - deltaT);
 			// } catch (Exception e) {
 			// 	// TODO Auto-generated catch block
 			// 	e.printStackTrace();
 			// }
+
 		}
 	} // main
 	
@@ -268,7 +274,5 @@ public class MainApp {
 
 	public void startServer(){
 		this.component.toggleServer();
-		this.server = new serverThread(component);
-		this.server.run();
 	}
 }

@@ -6,6 +6,8 @@ import java.lang.Runnable;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReadWriteLock;
+
 import javax.swing.JFrame;
 
 public class clientThread implements Runnable {
@@ -16,12 +18,14 @@ public class clientThread implements Runnable {
     private Socket clientSocket;
     private DataOutputStream sendstream;
     private serverReceiver receiver;
+    private ReadWriteLock lock;
     private static final long tickrate = 7812500; // 128th of a second in ns
 
     public clientThread(MainComponent component){
         this.component = component;
         this.address = this.component.getAddress();
         this.port = Integer.parseInt(this.component.getPort());
+        this.lock = this.component.getLock();
     }
 
     @Override
@@ -50,6 +54,7 @@ public class clientThread implements Runnable {
             time  = 1*System.nanoTime();
             deltaT = 1*System.nanoTime() - time;
             packets = new ArrayList<>();
+            this.lock.readLock().lock();
             for (int i = 0; i < 2; i++) {
                 switch (i) {
                     case 0:
@@ -65,6 +70,7 @@ public class clientThread implements Runnable {
                         break;
                 }
             }
+            this.lock.readLock().unlock();
             for(byte[] packet : packets) {
                 try {
                     sendstream.writeByte(packet[0] + 1);

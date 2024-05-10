@@ -895,6 +895,10 @@ public class MainComponent extends JComponent {
 		return this.settingStrings.get(3).toString();
 	}
 
+	public ReadWriteLock getLock(){
+		return this.levelLock;
+	}
+
 	public ArrayList<byte[]> retrieveEntityPacket(){
 		return new ArrayList<byte[]>();
 	}

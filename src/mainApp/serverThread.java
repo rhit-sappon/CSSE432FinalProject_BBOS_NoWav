@@ -7,6 +7,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReadWriteLock;
+
 import javax.swing.JFrame;
 
 public class serverThread implements Runnable {
@@ -19,10 +21,12 @@ public class serverThread implements Runnable {
     private serverReceiver receiver;
     private int sendState;
     private DataOutputStream sendstream;
+    private ReadWriteLock lock;
 
     public serverThread(MainComponent component){
         this.component = component;
         this.port = Integer.parseInt(this.component.getPort());
+        this.lock = this.component.getLock();
     }
 
     @Override
@@ -65,6 +69,7 @@ public class serverThread implements Runnable {
                 time  = 1*System.nanoTime();
                 deltaT = 1*System.nanoTime() - time;
                 packets = new ArrayList<>();
+                this.lock.readLock().lock();
                 for (int i = 0; i < 3; i++) {
                     switch (i) {
                         case 0:
@@ -86,6 +91,7 @@ public class serverThread implements Runnable {
                             break;
                     }
                 }
+                this.lock.readLock().unlock();
                 for(byte[] packet : packets) {
                     try {
                         sendstream.writeByte(packet[0] + 1);

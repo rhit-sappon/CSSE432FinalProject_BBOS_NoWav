@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.lang.Runnable;
 import java.net.Socket;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReadWriteLock;
+
 import javax.swing.JFrame;
 
 public class serverReceiver implements Runnable {
@@ -14,11 +16,13 @@ public class serverReceiver implements Runnable {
     private static final long tickrate = 7812500; // 128th of a second in ns
     private Socket clientSocket;
     private DataInputStream ingest;
+    private ReadWriteLock lock;
 
     public serverReceiver(MainComponent component, Socket clientSocket){
         this.component = component;
         // this.port = Integer.parseInt(this.component.getPort());
         this.clientSocket = clientSocket;
+        this.lock = this.component.getLock();
         try {
             this.ingest = new DataInputStream(clientSocket.getInputStream());
         } catch (IOException e) {
@@ -48,6 +52,7 @@ public class serverReceiver implements Runnable {
     }
 
     private void parsePacket(byte[] packet){
+        this.lock.writeLock().lock();
         switch (packet[0]) {
             case 0:
                 this.component.setOtherColor(packet);
@@ -61,12 +66,13 @@ public class serverReceiver implements Runnable {
             default:
                 break;
         }
+        this.lock.writeLock().unlock();
     }
 
     @Override
     public void run() {
 
-        while (this.component.hasClient()) {
+        while (this.component.hasClient() || this.component.isHost()) {
             byte[] packet = receivePacket();
             parsePacket(packet);
             
