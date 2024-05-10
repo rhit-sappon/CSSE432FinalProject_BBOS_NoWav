@@ -2,6 +2,7 @@ package mainApp;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.lang.Runnable;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -102,14 +103,15 @@ public class serverThread extends Thread {
                 }
                 this.lock.readLock().unlock();
                 for(byte[] packet : packets) {
-                    try {
-                        sendstream.writeByte(packet[0] + 1);
-                    } catch (IOException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
+                    // try {
+                    //     sendstream.writeByte(packet[0] + 1);
+                    // } catch (IOException e) {
+                    //     // TODO Auto-generated catch block
+                    //     e.printStackTrace();
+                    // }
                     try {
                         sendstream.write(packet);
+                        sendstream.flush();
                     } catch (IOException e) {
                         // TODO Auto-generated catch block
                         e.printStackTrace();

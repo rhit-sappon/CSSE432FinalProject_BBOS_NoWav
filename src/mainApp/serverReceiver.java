@@ -39,6 +39,7 @@ public class serverReceiver extends Thread {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+        System.out.println(length);
         byte[] packet = new byte[length[0]];
 
         try {
