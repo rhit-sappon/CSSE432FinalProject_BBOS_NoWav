@@ -240,7 +240,7 @@ public class MainComponent extends JComponent {
 			drawLevel(g2d);
 			
 			this.hero.drawOn(g2d);
-			if (this.hasClient) {
+			if (this.hasClient || !this.isHost) {
 				this.otherHero.drawOn(g2d);
 			}
 			if(objects.size() > 0)
