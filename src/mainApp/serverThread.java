@@ -55,7 +55,7 @@ public class serverThread extends Thread {
             this.lock.writeLock().unlock();
 
             receiver = new serverReceiver(this.component, this.clientSocket);
-            receiver.run();
+            receiver.start();
 
             try {
                 sendstream = new DataOutputStream(this.clientSocket.getOutputStream());
