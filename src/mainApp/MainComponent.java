@@ -752,10 +752,10 @@ public class MainComponent extends JComponent {
 	}
 
 	private byte[] getEntityPosHelper(byte entityValue, float xPos, float yPos, byte lives) {
-		ByteBuffer entityArray = ByteBuffer.allocate(20);
-		entityArray.put((byte)19);
+		ByteBuffer entityArray = ByteBuffer.allocate(12);
+		entityArray.put((byte)11);
 		entityArray.put(EPACKET);
-		entityArray.put(this.hero.getEntityValue());
+		entityArray.put(entityValue);
 		entityArray.putFloat(xPos);
 		entityArray.putFloat(yPos);
 		entityArray.put(lives);
@@ -807,12 +807,13 @@ public class MainComponent extends JComponent {
 			}
 			for (byte i = 0; i < this.objects.size(); i++ ){
 				Creature entity = this.objects.get(i);
+				sendArray.add(getEntityPosHelper(entity.getEntityValue(), entity.getXPos(), entity.getYPos(), (byte)1));
 				if (deadValue == 3){
 					deadValue = (byte)(entity.getEntityValue()%2 + 1);
+					entity.setEntityValue((byte)1);
 				}
-				sendArray.add(getEntityPosHelper(entity.getEntityValue(), entity.getXPos(), entity.getYPos(), (byte)1));
-				// System.out.println(entity.getEntityValue());
-				entity.setEntityValue((byte)1);
+				
+				
 			}
 			if (deadValue != 0) {
 				sendArray.add(getEntityPosHelper(deadValue, 0.0f, 0.0f, (byte)0));
@@ -826,29 +827,29 @@ public class MainComponent extends JComponent {
 
 	public void setEntityPos(byte[] entityPos){
 		if (entityPos[1] == 0) {
-			this.otherHero.setPosition(ByteBuffer.wrap(entityPos).getFloat(2), ByteBuffer.wrap(entityPos).getFloat(10));
+			this.otherHero.setPosition(ByteBuffer.wrap(entityPos).getFloat(2), ByteBuffer.wrap(entityPos).getFloat(6));
 			this.otherHero.updateRect();
 			// System.out.println(ByteBuffer.wrap(entityPos).getFloat(2));
 			// System.out.println(entityPos[17]);
-			if (this.scorecard.getLives() > entityPos[18]) {
+			if (this.scorecard.getLives() > entityPos[10]) {
 				this.scorecard.loseLife();
 			}
 		} else {
 			switch (entityPos[1]) {
 				case 1:
-					if (entityPos[18] == 0) {
+					if (entityPos[10] == 0) {
 						this.objects.get(0).die(); 
 					} else {
-						this.objects.get(0).setPosition(ByteBuffer.wrap(entityPos).getFloat(2), ByteBuffer.wrap(entityPos).getFloat(10));
+						this.objects.get(0).setPosition(ByteBuffer.wrap(entityPos).getFloat(2), ByteBuffer.wrap(entityPos).getFloat(6));
 						this.objects.get(0).updateRect();
 					}
 					break;
 				case 2:
-					if (entityPos[18] == 0) {
+					if (entityPos[10] == 0) {
 						this.objects.get(1).die(); 
 					} else {
 						int index2 = this.objects.size() - 1;
-						this.objects.get(index2).setPosition(ByteBuffer.wrap(entityPos).getFloat(2), ByteBuffer.wrap(entityPos).getFloat(10));
+						this.objects.get(index2).setPosition(ByteBuffer.wrap(entityPos).getFloat(2), ByteBuffer.wrap(entityPos).getFloat(6));
 						this.objects.get(index2).updateRect();
 					}
 					break;

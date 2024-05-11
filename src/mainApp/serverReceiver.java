@@ -67,6 +67,13 @@ public class serverReceiver extends Thread {
                 this.component.setLevel(packet);
                 break;
             case 2:
+                // System.out.println(
+                //     "-------------\n" + 
+                //     "target: " + packet[1] + "\n" + 
+                //     "x: " + ByteBuffer.wrap(packet).getFloat(2) + "\n" +
+                //     "y: " + ByteBuffer.wrap(packet).getFloat(9) + "\n" +
+                //     "-------------"
+                // );
                 this.component.setEntityPos(packet);
                 // System.out.println(packet[18]);
                 break;
