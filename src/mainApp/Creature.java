@@ -111,7 +111,7 @@ public abstract class Creature {
 		g2d.fill(rect);
 		}
 	}
-	public void moveTowardsHero(Creature hero) {
+	public void moveTowardsHero(Creature hero, Creature otherHero, boolean hasClient) {
 		// TODO Auto-generated method stub
 		
 	}

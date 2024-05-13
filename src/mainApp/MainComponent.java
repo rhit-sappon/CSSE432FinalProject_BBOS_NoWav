@@ -168,6 +168,14 @@ public class MainComponent extends JComponent {
 			this.hero.setPosition(240,780);
 			}
 		}
+		if(this.hasClient()){
+			if (this.otherHero.isDead())
+				if(this.scorecard.getLives() > 0) {
+					this.otherHero.isAlive = true;
+					// this.otherHero.setPosition(240,780);
+					// this.otherHero.updateRect();
+				}
+		}
 		if(this.handleCeilingCollision(this.hero))
 			this.hero.updateY(this.step);
 		if(this.handleWallCollisionX(this.hero))
@@ -183,6 +191,13 @@ public class MainComponent extends JComponent {
 		
 		if(levelBombs.size() > 0) {
 			for(Rectangle2D.Double bomb : levelBombs) {
+				if(this.hasClient()){
+					if(bomb.intersects(this.otherHero.getRect())){
+						this.scorecard.addScore(10);
+						tempBomb.add(bomb);
+						this.bombs --;
+					}
+				}
 				if(bomb.intersects(this.hero.getRect())){
 					this.scorecard.addScore(10);
 					tempBomb.add(bomb);
@@ -195,7 +210,12 @@ public class MainComponent extends JComponent {
 		if(objects.size() > 0)
 			for(Creature enemy : objects) {
 				enemy.collidesWithHero(this.hero,this.scorecard);
-				enemy.moveTowardsHero(this.hero);
+				if (this.hasClient()){
+					int oldlives = this.scorecard.getLives();
+					enemy.collidesWithHero(this.otherHero, this.scorecard);
+					this.scorecard.setLife(oldlives);
+				}
+				enemy.moveTowardsHero(this.hero, this.otherHero, this.hasClient);
 				if (this.isHost) {
 					if(this.handleCeilingCollision(enemy))
 						enemy.updateY(this.step);
@@ -623,7 +643,10 @@ public class MainComponent extends JComponent {
 				this.settingStrings.get(this.inText).append(letter);
 				if(this.inText == 1){
 					this.isNewName = true;
-				}
+				} 
+				// else if (this.inText == 0 && this.settingStrings.get(0).length() == 6){
+				// 	this.isNewName = true;
+				// }
 			}
 		}
 	}
@@ -763,21 +786,21 @@ public class MainComponent extends JComponent {
 	}
 
 	public byte[] getUserPack() {
-		byte packlen = (byte)(4+this.settingStrings.get(1).length()+1);
-		byte r = (byte)Integer.parseInt(this.settingStrings.get(0).substring(0,2),16);
-		byte g = (byte)Integer.parseInt(this.settingStrings.get(0).substring(2,4),16);
-		byte b = (byte)Integer.parseInt(this.settingStrings.get(0).substring(4,6),16);
+		byte packlen = (byte)(14);//+this.settingStrings.get(1).length()+1);
+		// byte r = (byte)Integer.parseInt(this.settingStrings.get(0).substring(0,2),16);
+		// byte g = (byte)Integer.parseInt(this.settingStrings.get(0).substring(2,4),16);
+		// byte b = (byte)Integer.parseInt(this.settingStrings.get(0).substring(4,6),16);
 
 		ByteBuffer entityArray = ByteBuffer.allocate(packlen+1);
 		entityArray.put(packlen);
 		entityArray.put((byte)0);
-		entityArray.put(r);
-		entityArray.put(g);
-		entityArray.put(b);
+		entityArray.putInt(Integer.parseInt(this.settingStrings.get(0).substring(0,2),16));
+		entityArray.putInt(Integer.parseInt(this.settingStrings.get(0).substring(2,4),16));
+		entityArray.putInt(Integer.parseInt(this.settingStrings.get(0).substring(4,6),16));
 
-		for (char letter : this.settingStrings.get(1).toString().toCharArray()){
-			entityArray.putChar(letter);
-		}
+		// for (char letter : this.settingStrings.get(1).toString().toCharArray()){
+		// 	entityArray.putChar(letter);
+		// }
 		entityArray.put((byte) 0);
 
 		return entityArray.array();
@@ -812,8 +835,6 @@ public class MainComponent extends JComponent {
 					deadValue = (byte)(entity.getEntityValue()%2 + 1);
 					entity.setEntityValue((byte)1);
 				}
-				
-				
 			}
 			if (deadValue != 0) {
 				sendArray.add(getEntityPosHelper(deadValue, 0.0f, 0.0f, (byte)0));
@@ -872,22 +893,24 @@ public class MainComponent extends JComponent {
 	}
 
 	public void setOtherColor(byte[] packet) {
-		Color newColor = new Color(packet[1], packet[2], packet[3]);
+		ByteBuffer pack = ByteBuffer.wrap(packet);
+		Color newColor = new Color(pack.getInt(1), pack.getInt(5), pack.getInt(9));
 		this.otherHero.setColor(newColor);
-		StringBuffer name = new StringBuffer();
-		int i = 4;
-		char letter = (char) packet[i];
-		while (letter != 0) {
-			name.append(letter);
-			i++;
-			letter = (char) packet[i];
-		}
-		this.clientName = name.toString();
+		// StringBuffer name = new StringBuffer();
+		// int i = 4;
+		// char letter = (char) packet[i];
+		// while (letter != 0) {
+		// 	name.append(letter);
+		// 	i++;
+		// 	letter = (char) packet[i];
+		// }
+		// this.clientName = name.toString();
 	}
 
 	public void setLevel(byte[] packet) {
 		ByteBuffer levelpack = ByteBuffer.wrap(packet);
 		this.level = levelpack.getLong(2);
+		this.scorecard.setLife(3);
 		this.changeLevel(0);
 	}
 

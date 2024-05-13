@@ -73,6 +73,16 @@ public class clientThread extends Thread {
         // receiver = new serverReceiver(this.component, this.clientSocket);
         // receiver.start();
 
+        this.lock.readLock().lock();
+        try {
+            this.sendstream.write(this.component.getUserPack());
+            this.sendstream.flush();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        this.lock.readLock().unlock();
+
 
         ArrayList<byte[]> packets;
         long time = 0;
