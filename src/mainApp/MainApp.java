@@ -79,7 +79,6 @@ public class MainApp {
 						component.startGame();
 					} else if(component.hitButton(0, "Host a Server", e.getX(),e.getY())){
 						startServer();
-						System.out.println("browhat");
 						component.startGame();
 					} else if(component.hitButton(0,"Settings",e.getX(),e.getY())){
 						component.toggleSettings();
@@ -255,7 +254,7 @@ public class MainApp {
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			//e.printStackTrace();
-			System.out.println("bruh");
+			System.out.println("filenotfound");
 		}
 		Scanner scanner = new Scanner(file);
 		while(scanner.hasNext()) {

@@ -17,37 +17,37 @@ public class SoundiBoi {
 		String fileName = "";
 		switch(track) {
 		case 1:
-			fileName = "gmo.wav";
+			//fileName = "gmo.wav";
 			break;
 		case 2:
-			fileName = "tda.wav";
+			//fileName = "tda.wav";
 			break;
 		case 3:
-			fileName = "bos.wav";
+			//fileName = "bos.wav";
 			break;
 		case 4:
-			fileName = "sum.wav";
+			//fileName = "sum.wav";
 			break;
 		case 5:
-			fileName = "clb.wav";
+			//fileName = "clb.wav";
 			break;
 		case 6:
-			fileName = "hmk.wav";
+			//fileName = "hmk.wav";
 			break;
 		case 7:
-			fileName = "bll.wav";
+			//fileName = "bll.wav";
 			break;
 		case 8:
-			fileName = "tfy.wav";
+			//fileName = "tfy.wav";
 			break;
 		case 9:
-			fileName = "rdb.wav";
+			//fileName = "rdb.wav";
 			break;
 		case 10:
-			fileName = "dst.wav";
+			//fileName = "dst.wav";
 			break;
 		default:
-			fileName = "tda.wav";
+			//fileName = "tda.wav";
 			break;
 		}
 		audioInputStream = AudioSystem.getAudioInputStream(new File(fileName).getAbsoluteFile());
@@ -56,11 +56,11 @@ public class SoundiBoi {
 		clip.loop(Clip.LOOP_CONTINUOUSLY);
 	}
 	public static void playTrack() {
-		SoundiBoi.clip.start();
+		//SoundiBoi.clip.start();
 	}
 	public static void stopTrack() {
-		SoundiBoi.clip.stop();
-		SoundiBoi.clip.close();
+		//SoundiBoi.clip.stop();
+		//SoundiBoi.clip.close();
 	}
 
 }
